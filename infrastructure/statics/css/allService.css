@@ -1,0 +1,56 @@
+/*
+每种服务对应的css
+只是背景图片不一样而已
+ */
+
+.serviceCssCommon {
+    /*通用服务css*/
+    float: left;
+    width: 25%;
+    position: relative;
+    min-height: 1px;
+    padding-right: 15px;
+    padding-left: 15px;
+    font: 20px bold;
+    height: 50px;
+    margin-top: 2%;
+    cursor: pointer;
+    border: #2e2f2f solid;
+
+}
+
+.serviceCssNginx {
+    /*Nginx css*/
+    float: left;
+    width: 25%;
+    position: relative;
+    min-height: 1px;
+    padding-right: 15px;
+    padding-left: 15px;
+    font: 20px bold;
+    height: 100px;
+    margin-top: 2%;
+    background: url("/static/images/service_logo/nginx.png");
+    background-repeat: no-repeat;
+    background-size:50% 100%;
+    background-position: center;
+
+}
+
+.serviceCssSsh {
+    /*ssh css*/
+    float: left;
+    width: 25%;
+    position: relative;
+    min-height: 1px;
+    padding-right: 15px;
+    padding-left: 15px;
+    font: 20px bold;
+    height: 100px;
+    margin-top: 2%;
+    background: url("/static/images/service_logo/ssh.png");
+    background-repeat: no-repeat;
+    background-size:50% 100%;
+    background-position: center;
+
+}

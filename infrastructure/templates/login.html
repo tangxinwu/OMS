@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>运维登陆界面</title>
+  <meta name="description" content="mobile first, app, web app, responsive, admin dashboard, flat, flat ui">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="/static/css/bootstrap.css">
+  <link rel="stylesheet" href="/static/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <!--[if lt IE 9]>
+    <script src="/static/js/ie/respond.min.js"></script>
+    <script src="/static/js/ie/html5.js"></script>
+  <![endif]-->
+</head>
+<body>
+  <!-- header -->
+  <header id="header" class="navbar bg bg-black">
+    <a href="docs.html" class="btn btn-link pull-right"><i class="icon-question icon-xlarge text-default"></i></a>
+    <a class="navbar-brand" href="#"><img src="/static/images/top_logo.png"></a>
+    <a class="navbar-brand" href="#">小虎科技运维后台登陆</a>
+          <style>
+        .navbar-brand img {
+            height: 30px;
+            width: 80px;
+        }
+    </style>
+  </header>
+  <!-- / header -->
+  <section id="content">
+    <div class="main padder">
+      <div class="row">
+        <div class="col-lg-4 col-offset-4 m-t-large">
+          <section class="panel">
+            <header class="panel-heading text-center">
+              登陆
+            </header>
+            <form action="service_status.html" class="padder">
+              <div class="block">
+                <label class="control-label">邮箱/用户名</label>
+                <input type="email" placeholder="请输入用户名/邮箱" class="form-control" id="login_name">
+              </div>
+              <div class="block">
+                <label class="control-label">密码</label>
+                <input type="password" id="login_password" placeholder="Password" class="form-control">
+              </div>
+              <button type="button" class="btn btn-info" style="left: 40%" id="login_submit">登陆</button>
+            </form>
+          </section>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- footer -->
+  <footer id="footer">
+    <div class="text-center padder clearfix">
+      <p>
+        <small>&copy; Create by 唐鑫吾 2018</small><br><br>
+      </p>
+    </div>
+  </footer>
+  <!-- / footer -->
+	<script src="/static/js/jquery.min.js"></script>
+  <!-- 自定义js -->
+  <script src="/static/js/login.js"></script>
+
+
+
+  <!-- Bootstrap -->
+  <script src="/static/js/bootstrap.js"></script>
+  <!-- app -->
+  <script src="/static/js/app.js"></script>
+  <script src="/static/js/app.plugin.js"></script>
+  <script src="/static/js/app.data.js"></script>
+
+
+</body>
+</html>

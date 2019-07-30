@@ -1,0 +1,90 @@
+#! /bin/bash
+
+# variables for server
+work_path=/OMS
+port=10088
+action=$1
+
+
+####################################
+if [ ! -d ${work_path} ];then
+    echo "Work path not exisied!"
+    exit 111
+fi
+
+cd ${work_path}
+
+function stop_web() {
+    # kill celery processes
+    a=`ps -ef | grep "celery worker" | grep -v grep | awk -F ' ' '{print $2}'` && for i in $a;do kill -9 $i;done
+
+    # kill django processes
+    pid=`netstat -lntp | grep :${port} | awk -F ' ' '{print $7}' | awk -F '/' '{print $1}'`
+    kill -9 ${pid}  1>/dev/null 2>/dev/null  
+
+    # kill rabbitmq-server
+    rabbitmqctl stop 1>/dev/null 2>/dev/null
+
+}
+
+function start_web() {
+    stop_web
+    # start django process
+    nohup python3 manage.py runserver 0.0.0.0:${port} & > ./logs/web.log
+
+    # start rabbitmq-server process
+    nohup rabbitmq-server > ./logs/rabbitmq-server.log &
+
+    sleep 5
+
+    # start celery process
+    nohup celery worker -A OMS -l info --beat > ./logs/celery.log &
+
+
+}
+
+function restart_web() {
+    start_web
+    stop_web
+}
+
+function web_status() {
+
+    celery_process_num=`ps -ef | grep "celery worker" | grep -v grep | wc -l`
+    pid=`netstat -lntp | grep :${port} | awk -F ' ' '{print $7}' | awk -F '/' '{print $1}'` 
+    mq_ui_flag=`netstat -lntp | grep :15672`
+    mq_flag=`netstat -lntp | grep :5672`
+    echo "celery进程数 ${celery_process_num}"
+    if [[ ${pid} == "" ]];then
+        echo "django进程不在运行中"
+    else
+        echo "django已经在运行中"
+    fi
+    if [[ ${mq_ui_flag} == ""  ]];then
+        echo "rabbitmq ui 未启动"
+    else
+        echo "rabbitmq ui 已经启动"
+    fi
+    if [[ ${mq_flag} == "" ]];then
+        echo "rabbitmq 主程未启动"
+    else
+        echo "rabbitmq 主程序已经启动"
+    fi
+}
+
+case ${action} in 
+     start)
+        start_web;;
+     stop)
+        stop_web;;
+     restart)
+        stop_web
+        start_web;;
+     status)
+	web_status;;
+     *)
+       echo "USAGE:web_server start|restart|stop|status"
+esac
+
+
+

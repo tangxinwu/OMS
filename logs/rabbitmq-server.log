@@ -1,0 +1,10 @@
+
+  ##  ##
+  ##  ##      RabbitMQ 3.7.9. Copyright (C) 2007-2018 Pivotal Software, Inc.
+  ##########  Licensed under the MPL.  See http://www.rabbitmq.com/
+  ######  ##
+  ##########  Logs: /var/log/rabbitmq/rabbit@Devops.log
+                    /var/log/rabbitmq/rabbit@Devops_upgrade.log
+
+              Starting broker...
+ completed with 3 plugins.

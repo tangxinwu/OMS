@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>小虎科技</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/static/css/bootstrap.css">
+    <link rel="stylesheet" href="/static/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/plugin.css">
+    <link rel="stylesheet" href="/static/css/landing.css">
+
+    <!--ip 显示界面css-->
+    <link rel="stylesheet" type="text/css" href="/static/css/ipTips.css" />
+    <!--[if lt IE 9]>
+    <script src="/static/js/ie/respond.min.js"></script>
+    <script src="/static/js/ie/html5.js"></script>
+    <![endif]-->
+    <style>
+        .cover {
+            background-color: #2b2b2b;
+            opacity: 0.5;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            z-index: 9999;
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="cover">
+        <img src="/static/images/loading.gif" style="margin-left: 42%;margin-top: 15%">
+    </div>
+  <!-- header -->
+	<header id="header" class="navbar bg bg-black">
+    <ul class="nav navbar-nav navbar-avatar pull-right">
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">            
+          <span class="hidden-sm-only">{{ logged_user }}</span>
+          <span class="thumb-small avatar inline"><img src="/static/images/avatar.jpg" alt="{{ logged_user }}" class="img-circle"></span>
+          <b class="caret hidden-sm-only"></b>
+        </a>
+        <ul class="dropdown-menu">
+          <li><a href="/logout/">登出</a></li>
+        </ul>
+      </li>
+    </ul>
+    <a class="navbar-brand" href="#"><img src="/static/images/top_logo.png"></a>
+    <button type="button" class="btn btn-link pull-left nav-toggle hidden-lg" data-toggle="class:slide-nav slide-nav-left" data-target="body">
+      <i class="icon-reorder icon-xlarge text-default"></i>
+    </button>
+	</header>
+  <!-- / header -->
+  <!-- nav -->
+  <nav id="nav" class="nav-primary visible-lg nav-vertical">
+    <ul class="nav" data-spy="affix" data-offset-top="50">
+        <li><a href="/ip_interface/"><i class="icon-calendar icon-xlarge"></i>ip管理界面</a></li>
+{#        <li><a href="/port_check/"><i class="icon-calendar icon-xlarge"></i>端口检测</a></li>#}
+        <li ><a href="/version_update/"><i class="icon-calendar icon-xlarge"></i>版本更新</a></li>
+        <li><a href="/logs_gather/"><i class="icon-calendar icon-xlarge"></i>日志界面</a></li>
+        <li class="active"><a href="/shortcut/"><i class="icon-calendar icon-xlarge"></i>快捷入口</a></li>
+        <li><a href="/docker_local_registry/"><i class="icon-calendar icon-xlarge"></i>docker本地仓库镜像列表</a></li>
+<!--        <li><a href="/apk/"><i class="icon-calendar icon-xlarge"></i>apk打包</a></li>-->
+        <li><a href="/h5_update/"><i class="icon-calendar icon-xlarge"></i>h5更新</a></li>
+        <li><a href="/go-task/"><i class="icon-calendar icon-xlarge"></i>go-task操作</a></li>
+        <li><a href="/config_transfor/"><i class="icon-calendar icon-xlarge"></i>转换配置文件</a></li>
+    </ul>
+  </nav>
+  <!-- / nav -->
+  <section id="content">
+      <div>
+          <br>
+      </div>
+      <div class="col-sm-3" style="align-items: center;text-align: center;margin-top:10px;margin-bottom:10px">
+          <button class="btn-large icon-large" onclick="window.location.href='http://192.168.1.251:9000'">内网测试docker服务图形管理界面</button>
+      </div>
+
+      <div class="col-sm-3" style="align-items: center;text-align: center;margin-top:10px;margin-bottom:10px">
+          <button class="btn-large icon-large" onclick="window.location.href='http://192.168.1.242:8080'">jenkins管理界面</button>
+      </div>
+      <div class="col-sm-3" style="align-items: center;text-align: center;margin-top:10px;margin-bottom:10px">
+          <button class="btn-large icon-large" onclick="window.location.href='http://39.108.106.228:3000/login'">Grafana外网监控界面</button>
+      </div>
+      <div class="col-sm-3" style="align-items: center;text-align: center;margin-top:10px;margin-bottom:10px">
+          <button class="btn-large icon-large" onclick="window.location.href='http://192.168.1.252'">内网vcenter管理界面</button>
+      </div>
+      <div class="col-sm-2" style="align-items: center;text-align: center;margin-top:10px;margin-bottom:10px">
+          <button id="dudu-server" name="192.168.1.243" class="btn-large icon-large" >嘟嘟牛服务端</button>
+      </div>
+      <div class="col-sm-2" style="align-items: center;text-align: center;margin-top:10px;margin-bottom:10px">
+          <button id="dudu-client" name="192.168.1.244" class="btn-large icon-large" >嘟嘟牛客户端</button>
+      </div>
+<!--      <div class="col-sm-2" style="align-items: center;text-align: center;">-->
+<!--          <button id="dudu-test" name="192.168.1.238" class="btn-large icon-large" >嘟嘟牛test</button>-->
+<!--      </div>-->
+
+  </section>
+  <!-- footer -->
+
+
+
+   <!-- / footer -->
+	<script src="/static/js/jquery.min.js"></script>
+
+       <!-- 自定义js -->
+    <script src="/static/js/shortcut.js"></script>
+
+  <!-- Bootstrap -->
+  <script src="/static/js/bootstrap.js"></script>
+  <!-- app -->
+  <script src="/static/js/app.js"></script>
+  <script src="/static/js/app.plugin.js"></script>
+  <script src="/static/js/app.data.js"></script>
+
+  <!-- Sparkline Chart -->
+  <script src="/static/js/charts/sparkline/jquery.sparkline.min.js"></script>  
+  <!-- Easy Pie Chart -->
+  <script src="/static/js/charts/easypiechart/jquery.easy-pie-chart.js"></script>
+  <script src="/static/js/ie/excanvas.js"></script>
+</body>
+</html>

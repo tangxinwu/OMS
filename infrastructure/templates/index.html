@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="/static/jquery-3.3.1.min.js"></script>
+    <script>
+        function post_data() {
+            var content = $("#content").val();
+            $.post("/test/", {"content": content}, function (result) {
+               alert(result);
+            });
+        }
+
+    </script>
+    <style>
+        textarea {
+            height: 1000px;
+            width: 800px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <textarea id="content">{{ data }}</textarea>
+    {% for config in all_build_file_list %}
+    <input type="button" onclick="post_data();" value="{{ config }}" style="float: right">
+    {% endfor %}
+</body>
+</html>
