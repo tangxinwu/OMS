@@ -6,20 +6,19 @@ from infrastructure.plugin.process_check import GoTaskCheck
 import subprocess
 import os
 import datetime
-import re
 import paramiko
-
-
 
 # 版本更新 task
 @celery_app.task
 def version_update_task(application_id):
-    print("打印提示:", application_id)
-    selected_application = Application.objects.get(id=int(application_id))
+    selected_application = Application.objects.get(id=int(application_id.split("_")[0]))
+    application_time_flag = application_id.split("_")[1]
+    print("打印time flag", application_time_flag)
     # 运行本地拉取脚本
-    pull_cmd = "/usr/bin/sh {} {} {}".format(selected_application.ApplicationUpdateScriptPath,
+    pull_cmd = "/usr/bin/sh {} {} {} {}".format(selected_application.ApplicationUpdateScriptPath,
                                              selected_application.ApplicationName,
-                                             (lambda x: x if x else "")(selected_application.ApplicationBranch))
+                                              (lambda x: x if x else "master")(selected_application.ApplicationBranch),
+                                              application_time_flag)
     print(pull_cmd)
 
     p = subprocess.Popen(pull_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -34,16 +33,18 @@ def version_update_task(application_id):
     transport.send_file(selected_application.ApplicationUpdateScriptPathAfter,
                         os.path.join("/tmp", os.path.basename(selected_application.ApplicationUpdateScriptPathAfter)))
     # 传送tar文件到remote服务器
-    transport.send_file("/root/workspace/{}/{}.tar".format(selected_application.ApplicationName,
-                                                           selected_application.ApplicationName),
-                        "/tmp/{}.tar".format(selected_application.ApplicationName))
+    transport.send_file("/root/workspace/{}/{}_{}.tar".format(selected_application.ApplicationName,
+                                                           selected_application.ApplicationName,
+                                                              application_time_flag),
+                        "/tmp/{}_{}.tar".format(selected_application.ApplicationName, application_time_flag))
     transport.close()
 
     # 远程运行脚本 ##
     ssh = ssh_plugin.SSHConnect(host)
-    cmd = "sh {} {}".format(
+    cmd = "sh {} {} {}".format(
         os.path.join("/tmp", os.path.basename(selected_application.ApplicationUpdateScriptPathAfter)),
-        selected_application.ApplicationPath)
+        selected_application.ApplicationPath,
+        application_time_flag)
     result = ssh.run_command(cmd)
     return (lambda x, y: x if x else y)(stdout, stderror) + result
 

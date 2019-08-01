@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 import djcelery
 from kombu import Exchange, Queue
-from .schedule_settings import *
+
 
 TIME_ZONE = 'Asia/Shanghai'
 
@@ -32,16 +32,16 @@ CELERY_TIMEZONE = TIME_ZONE
 # 自定义队列名用来分开
 # 如果自己定义了队列 每次都要自己设置定义的 队列对应的task 要不然消费者无法消费
 CELERY_QUEUES = (
-    # Queue("update_version", Exchange("update_version"), routing_key="task_a"),
-    # Queue("check_gotask_status", Exchange("check_gotask_status"), routing_key="task_b"),
-    # Queue("backup_vm", Exchange("backup_vm"), routing_key="backup_vm"),
+    Queue("update_version", Exchange("update_version"), routing_key="task_a"),
+    Queue("check_gotask_status", Exchange("check_gotask_status"), routing_key="task_b"),
+    Queue("backup_vm", Exchange("backup_vm"), routing_key="backup_vm"),
     Queue("backup_db", Exchange("backup_db"), routing_key="backup_db"),
 
 )
 
 CELERY_ROUTES = {
-    # "infrastructure.task.update_version": {"queue": "update_version", "routing_key": "task_a"},
-    # "infrastructure.task.check_gotask_status": {"queue": "check_gotask_status", "routing_key": "task_b"},
+    "infrastructure.task.update_version": {"queue": "update_version", "routing_key": "task_a"},
+    "infrastructure.task.check_gotask_status": {"queue": "check_gotask_status", "routing_key": "task_b"},
     # "infrastructure.task.backup_vm": {"queue": "backup_vm", "routing_key": "backup_vm"},
     "infrastructure.task.backup_db": {"queue": "backup_db", "routing_key": "backup_db"},
 }

@@ -171,12 +171,13 @@ def version_update(request):
     """
     logged_user = request.session.get("login_info", "").get("name", "")
     logged_role = request.session.get("login_info", "").get("role", "")
-    print(logged_role)
-    all_application = Application.objects.exclude(ApplicationName="web_app")  # 排除H5的升级
+    all_application = Application.objects.exclude(ApplicationName="web_app")  # 排除H5的升级 H5升级的特殊性 另外开个版面
     all_application_title = set([i.ApplicationName for i in all_application])
     if request.POST:
         application_id = request.POST.get("application_id", "")
-        result = version_update_task.apply_async((application_id,), queue="update_version", routing_key="task_a")
+        result = version_update_task.apply_async((str(application_id) + "_" + str(int(time.time())),),
+                                                 queue="update_version",
+                                                 routing_key="task_a")
         # try:
         UpdateLogs.objects.create(UpdateName=Application.objects.get(id=application_id),
                                   UpdateTaskId=result, UpdateUser=logged_user)
@@ -380,10 +381,12 @@ def h5_update(request):
         application_id = request.POST.get("application_id", "")
         sub_dir = request.POST.get("sub_dir", "")
         selected_application = Application.objects.get(id=int(application_id))
+        time_flag = str(int(time.time()))
         # 运行本地拉取脚本
-        pull_cmd = "/usr/bin/sh {} {} {}".format(selected_application.ApplicationUpdateScriptPath,
+        pull_cmd = "/usr/bin/sh {} {} {} {}".format(selected_application.ApplicationUpdateScriptPath,
                                                  selected_application.ApplicationName,
-                                                 (lambda x: x if x else "")(selected_application.ApplicationBranch))
+                                                 (lambda x: x if x else "master")(selected_application.ApplicationBranch),
+                                                 time_flag)
 
         p = subprocess.Popen(pull_cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         stdout = p.stdout.read().decode("utf8")
@@ -399,15 +402,16 @@ def h5_update(request):
         transport.send_file(selected_application.ApplicationUpdateScriptPathAfter,
                             os.path.join("/tmp", os.path.basename(selected_application.ApplicationUpdateScriptPathAfter)))
         # 传送tar文件到remote服务器
-        transport.send_file("/root/workspace/{}/{}.tar".format(selected_application.ApplicationName,
-                                                               selected_application.ApplicationName),
-                            "/tmp/{}.tar".format(selected_application.ApplicationName))
+        transport.send_file("/root/workspace/{}/{}_{}.tar".format(selected_application.ApplicationName,
+                                                               selected_application.ApplicationName,
+                                                                  time_flag),
+                            "/tmp/{}_{}.tar".format(selected_application.ApplicationName, time_flag))
         transport.close()
 
         # 远程运行脚本 ##
         ssh = ssh_plugin.SSHConnect(host)
-        cmd = "sh {} {} {}".format(os.path.join("/tmp", os.path.basename(selected_application.ApplicationUpdateScriptPathAfter)),
-                                selected_application.ApplicationPath, sub_dir)
+        cmd = "sh {} {} {} {}".format(os.path.join("/tmp", os.path.basename(selected_application.ApplicationUpdateScriptPathAfter)),
+                                selected_application.ApplicationPath, sub_dir, time_flag)
         result = ssh.run_command(cmd)
         return HttpResponse((lambda x, y: x if x else y)(stdout, stderror) + result)
     return render(request, "h5_update.html", locals())
@@ -623,8 +627,10 @@ def wiki_public(request):
 def test1(request):
     if request.method == "POST":
         id = request.POST.get("id", "")
+        aa = request.POST.get("aa", "")
+        print(aa)
         return HttpResponse("come on...Post data!.. data is {}".format(id))
     if request.method == "DELETE":
         id = request.DELETE.get("id", "")
-        return HttpResponse("Which one do u want to delete? {}".format(id))
+        return HttpResponse("Which one do u want to delete? delete is {}".format(id))
     return HttpResponse("Fail you lost everything....")
