@@ -34,5 +34,6 @@ urlpatterns = [
     path("go-task/", iv.go_task),                              # 用于检测go-task状态的接口
     path("config_transfor/", iv.config_transfor),              # 用于转换配置文件
     path("wiki_public/", iv.wiki_public),                      # 关联wiki文档和用户之间的关注关系
-
+    path("self_invoke/", iv.self_invoke),                      # 自助申请更新流程
+    path("self_invoke_result/", iv.self_invoke_result),        # 自助申请审批界面
 ]

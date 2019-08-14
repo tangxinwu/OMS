@@ -4,15 +4,20 @@ from infrastructure.models import *
 from django.views.decorators.csrf import csrf_exempt
 import subprocess
 import paramiko
-from infrastructure.plugin import ssh_plugin, CustomOpen, process_check, vcenter_connect
+from infrastructure.plugin import ssh_plugin, CustomOpen, process_check, vcenter_connect, CustomEmail
 import os
 import re
 import json
-from infrastructure.task import version_update_task,check_go_task_status
+from infrastructure.task import version_update_task, check_go_task_status
 from django_celery_results.models import TaskResult
+from django.forms.models import model_to_dict
 import pytz
 import pymysql
 import time
+import uuid
+
+
+from django.db.models import Q
 
 # Create your views here.
 
@@ -84,7 +89,7 @@ def logout(request):
     :return:
     """
     try:
-        del request.session["login_name"]
+        del request.session["login_info"]
     except KeyError:
         pass
     return render(request, "login.html")
@@ -523,7 +528,8 @@ def config_transfor(request):
     :param request:
     :return:
     """
-
+    logged_user = request.session.get("login_info", "").get("name", "")
+    logged_role = request.session.get("login_info", "").get("role", "")
     data = request.POST.get("data", "")
     host = {
         "hostname": "192.168.1.241",
@@ -621,6 +627,104 @@ def wiki_public(request):
                 return HttpResponse("已经批量关注成功！")
 
     return render(request, "wiki_public.html", locals())
+
+
+@csrf_exempt
+@need_login
+def self_invoke(request):
+    """
+    自助申请流程
+
+    :param logged_user 从session读取, 记录登录的人的登录名
+    :param logged_role 从session读取, 记录登录的人的角色
+    :param all_application 排除web_app以外的所有记录在数据库中的更新记录
+    :param all_auditingUser 查找所有用户表中 role为auditing的 审批者
+    流程:
+        前端传入需要更新的应用id(表application), 动作action, auditing_id审批者id -> 检测传入的参数的正确性 ->
+        发送邮件到对应的审批者下的邮箱
+    """
+    logged_user = request.session.get("login_info", "").get("name", "")
+    logged_role = request.session.get("login_info", "").get("role", "")
+    # 排除H5的升级 H5升级的特殊性 另外开个版面
+    all_application = Application.objects.filter(ApplicationBranch=None,
+                                                 ApplicationLevel__application_level="生产").exclude(
+                                                 ApplicationName="web_app")
+    all_auditingUser = User.objects.filter(role_type__RoleType="auditing")
+    if request.POST:
+        # action_list = ["web_check"]
+        application_id = request.POST.get("application_id", "")
+        action = request.POST.get("action", "")
+        auditing_id = request.POST.get("auditing_id", "")
+        # 检测传值
+        if not all([application_id, action, auditing_id]):
+            return HttpResponse("非法传值")
+        try:
+            Application.objects.get(id=application_id)
+        except Application.DoesNotExist:
+            return HttpResponse("没有找到对应的应用!")
+        # 传入的token用于审批人查找审批单
+        self_invoke_token = str(uuid.uuid1())
+        # 发送邮件通知 sender 和reciver都有默认值
+        try:
+            email = CustomEmail.SendMail(reciver=User.objects.get(id=auditing_id).user_email)
+            sent_result = email.send_mail("审批邮件", self_invoke_token)
+        except CustomEmail.SendMailFail:
+            return HttpResponse("发送申请邮件失败, 发送的目标邮箱为{}, 请确定邮箱是否正确".format(User.objects.get(id=auditing_id).user_email))
+        # 写入数据库
+        SelfInvoke.objects.create(InVokedApplicationId_id=application_id, InVokedUser=logged_user,
+                                  InvokedToken=self_invoke_token, AuditingUser_id=auditing_id)
+
+        return HttpResponse(sent_result)
+    return render(request, "self_invoke.html", locals())
+
+
+@csrf_exempt
+def self_invoke_result(request):
+    """
+    申请自助流程结果处理
+    从邮箱中拿取的uuid查找当前登录用户的审批下的 申请
+    :param request:
+    :return:
+    """
+    logged_user = request.session.get("login_info", "").get("name", "")
+    logged_role = request.session.get("login_info", "").get("role", "")
+    all_invoke = SelfInvoke.objects.all()
+    if request.POST:
+        # 用于前端显示的字典
+        is_deal_map = {
+            0: "未处理",
+            1: "已处理",
+            2: "已拒绝"
+        }
+        search_token = request.POST.get("search_token", "").replace(" ", "").replace("\t", "")
+        auditing_action = request.POST.get("auditing_action", "")
+        application_id_token = request.POST.get("application_id_token", "")
+        if search_token:
+            try:
+                token_search_result = SelfInvoke.objects.get(InvokedToken=search_token, AuditingUser__login_name=logged_user)
+                print(request.session.get("login_info"))
+
+            except SelfInvoke.DoesNotExist:
+                # 没有找到审批内容时返回faild
+                return HttpResponse("FAILD")
+            search_token_dict_result = model_to_dict(token_search_result)
+            search_token_dict_result["InVokedApplication"] = Application.objects.get(id=search_token_dict_result["InVokedApplicationId"]).ApplicationName
+            search_token_dict_result["AuditingUserName"] = User.objects.get(id=search_token_dict_result["AuditingUser"]).login_name
+            search_token_dict_result["deal_status"] = is_deal_map.get(search_token_dict_result.get("isdeal"))
+            return HttpResponse(json.dumps(search_token_dict_result))
+        if auditing_action == "deny":
+            SelfInvoke.objects.filter(InvokedToken=application_id_token.split("||")[1]).update(isdeal=2)
+            return HttpResponse("已经拒绝请求!")
+        if auditing_action == "agreed":
+            result = version_update_task.apply_async((str(application_id_token.split("||")[0]) + "_" + str(int(time.time())),),
+                                                     queue="update_version",
+                                                     routing_key="task_a")
+            # try:
+            UpdateLogs.objects.create(UpdateName=Application.objects.get(id=application_id_token.split("||")[0]),
+                                      UpdateTaskId=result, UpdateUser=request.session.get("login_info", "").get("name", "") + "(自助)")
+            SelfInvoke.objects.filter(InvokedToken=application_id_token.split("||")[1]).update(isdeal=1)
+            return HttpResponse("已经成功处理申请请求!")
+    return render(request, "self_invoke_result.html", locals())
 
 
 @csrf_exempt

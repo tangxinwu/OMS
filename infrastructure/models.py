@@ -60,6 +60,7 @@ class User(models.Model):
     xshell_path = models.CharField("xshell路径", max_length=200, blank=True, null=True)
     login_password = models.CharField("登陆的密码", max_length=100)
     role_type = models.ForeignKey(RoleType, verbose_name="角色类型", default=1, on_delete=models.CASCADE)
+    user_email = models.EmailField("电子邮件", max_length=100, blank=True, null=True)
 
     class Meta:
         ordering = ["login_name"]
@@ -159,7 +160,6 @@ class GoTask(models.Model):
         return "go task 任务在" + self.TaskInServer.server_name
 
 
-
 class GoTaskStatus(models.Model):
     """
     更新gotask的状态保存到这里
@@ -173,4 +173,47 @@ class GoTaskStatus(models.Model):
 
     def __str__(self):
         return self.GoTaskIP
+
+
+class AuditingUser(models.Model):
+    """
+    审核用户
+    """
+    AuditingName = models.CharField("审核人姓名", max_length=100)
+    AuditingUserEmail = models.EmailField("审核人邮箱", max_length=100)
+
+    class Meta:
+        ordering = ["AuditingName"]
+        verbose_name_plural = "审核用户"
+
+    def __str__(self):
+        return self.AuditingName
+
+
+class SelfInvoke(models.Model):
+    """
+    自助申请流程models
+    isdeal 字段标明这个申请是否被处理完成! 0 未处理 1 已经处理
+    """
+    isdeal_choice = (
+        (0, "未处理"),
+        (1, "已经通过"),
+        (2, "已经拒绝")
+    )
+    InVokedApplicationId = models.ForeignKey(Application, on_delete=models.CASCADE)
+    InVokedUser = models.CharField("自助申请流程的人", max_length=100)
+    InvokedToken = models.CharField("自助申请的流程的token", max_length=200)
+    InVokedTime = models.DateTimeField("申请的时间", auto_now_add=True)
+    AuditingUser = models.ForeignKey(User, on_delete=models.CASCADE)
+    isdeal = models.IntegerField("是否", choices=isdeal_choice, default=0, blank=True, null=True)
+
+    class Meta:
+        ordering = ["InVokedTime"]
+        verbose_name_plural = "自助申请的流程"
+
+    def __str__(self):
+        return self.InVokedUser + "在{}申请了流程".format(str(self.InVokedTime))
+
+
+
 

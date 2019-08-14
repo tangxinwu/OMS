@@ -73,3 +73,17 @@ class GoTaskStatusAdmin(admin.ModelAdmin):
 
 
 admin.site.register(GoTaskStatus, GoTaskStatusAdmin)
+
+
+class SelfInvokeAdmin(admin.ModelAdmin):
+    list_display = ["InVokedApplicationId", "InVokedUser", "InvokedToken", "InVokedTime", "AuditingUser", "isdeal"]
+
+
+admin.site.register(SelfInvoke, SelfInvokeAdmin)
+
+
+class AuditingUserAdmin(admin.ModelAdmin):
+    list_display = ["AuditingName", "AuditingUserEmail"]
+
+
+admin.site.register(AuditingUser, AuditingUserAdmin)
