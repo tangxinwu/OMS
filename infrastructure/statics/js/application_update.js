@@ -43,25 +43,28 @@ function task_detail(obj){
 $(function () {
     //更新按钮
    $("#update").off("onclick").on("click", function () {
-        $(".cover").show();
         $("#update_result").empty();
         var application_id = $("#applications").val();
         if (application_id == ""){
-            alert("请选择更新选项！");
-            $(".cover").hide();
+            swal("出错啦!", "请选择更新选项!", "error");
             return false;
         }
-        if (confirm("确定要更新吗？")){
-            $.post("/version_update/", {"application_id": application_id} ,function (result) {
-
-               $("#update_result").append(result);
-               refresh_log();
-               $(".cover").hide();
+		 swal({
+			title: "您确定要更新吗？",
+			text: "您确定要更新这个项目？",
+			type: "warning",
+			showCancelButton: true,
+			closeOnConfirm: false,
+			confirmButtonText: "是的，我要更新",
+			confirmButtonColor: "#ec6c62"
+			}, function() {
+				$.post("/version_update/", {"application_id": application_id} ,function (result) {
+                        $("#update_result").append(result);
+                        refresh_log();
+                        swal("操作成功!", "已成功发送更新请求！", "success");
         });
+			});
 
-        }else {
-            $(".cover").hide();
-        }
 
    }) ;
 

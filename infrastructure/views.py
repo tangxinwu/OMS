@@ -728,7 +728,7 @@ def self_invoke_result(request):
 
 
 @csrf_exempt
-def test1(request):
+def test1(request, test_params):
     if request.method == "POST":
         id = request.POST.get("id", "")
         aa = request.POST.get("aa", "")
@@ -737,4 +737,5 @@ def test1(request):
     if request.method == "DELETE":
         id = request.DELETE.get("id", "")
         return HttpResponse("Which one do u want to delete? delete is {}".format(id))
-    return HttpResponse("Fail you lost everything....")
+    print(test_params)
+    return HttpResponse("Fail you lost everything...., Because you are {}".format(test_params))

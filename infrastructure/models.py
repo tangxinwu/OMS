@@ -175,21 +175,6 @@ class GoTaskStatus(models.Model):
         return self.GoTaskIP
 
 
-class AuditingUser(models.Model):
-    """
-    审核用户
-    """
-    AuditingName = models.CharField("审核人姓名", max_length=100)
-    AuditingUserEmail = models.EmailField("审核人邮箱", max_length=100)
-
-    class Meta:
-        ordering = ["AuditingName"]
-        verbose_name_plural = "审核用户"
-
-    def __str__(self):
-        return self.AuditingName
-
-
 class SelfInvoke(models.Model):
     """
     自助申请流程models

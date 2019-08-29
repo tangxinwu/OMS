@@ -80,10 +80,3 @@ class SelfInvokeAdmin(admin.ModelAdmin):
 
 
 admin.site.register(SelfInvoke, SelfInvokeAdmin)
-
-
-class AuditingUserAdmin(admin.ModelAdmin):
-    list_display = ["AuditingName", "AuditingUserEmail"]
-
-
-admin.site.register(AuditingUser, AuditingUserAdmin)
