@@ -41,16 +41,15 @@
   <!-- nav -->
   <nav id="nav" class="nav-primary visible-lg nav-vertical">
     <ul class="nav" data-spy="affix" data-offset-top="50">
-        <li  class="active"><a href="/ip_interface/"><i class="icon-calendar icon-xlarge"></i>ip管理界面</a></li>
-{#        <li><a href="/port_check/"><i class="icon-calendar icon-xlarge"></i>端口检测</a></li>#}
+        {% if logged_role == "master" %}
+        <li><a href="/ip_interface/"><i class="icon-calendar icon-xlarge"></i>ip管理界面</a></li>
+        {% endif %}
         <li><a href="/version_update/"><i class="icon-calendar icon-xlarge"></i>版本更新</a></li>
         <li><a href="/logs_gather/"><i class="icon-calendar icon-xlarge"></i>日志界面</a></li>
         <li><a href="/shortcut/"><i class="icon-calendar icon-xlarge"></i>快捷入口</a></li>
         <li><a href="/docker_local_registry/"><i class="icon-calendar icon-xlarge"></i>docker本地仓库镜像列表</a></li>
-        <!--<li><a href="/apk/"><i class="icon-calendar icon-xlarge"></i>apk打包</a></li>-->
         <li><a href="/h5_update/"><i class="icon-calendar icon-xlarge"></i>h5更新</a></li>
         <li><a href="/go-task/"><i class="icon-calendar icon-xlarge"></i>go-task操作</a></li>
-        <li><a href="/config_transfor/"><i class="icon-calendar icon-xlarge"></i>转换配置文件</a></li>
         <li ><a href="/self_invoke/"><i class="icon-calendar icon-xlarge"></i>自助申请流程</a></li>
         {% if logged_role == "auditing" %}
         <li><a href="/self_invoke_result/"><i class="icon-calendar icon-xlarge"></i>自助申请流程审批界面</a></li>
@@ -59,7 +58,7 @@
     </ul>
   </nav>
   <!-- / nav -->
-  <section id="content">
+  <section id="content" >
     <div class="col-sm-12">
          <div class="input-group" style="width: 30%;margin: 2% 0 2% 34%">
                 <input type="text" placeholder="搜索ip" class="form-control" id="search_content">
@@ -70,7 +69,8 @@
 
 
     </div>
-    <div class="col-sm-12">
+    <div class="col-sm-12" style="float: left">
+        <div class="col-sm-12">
         <label>外网</label>
         <section class="main padder">
             {% for ip in wan_servers %}
@@ -78,9 +78,10 @@
             {% endfor %}
         </section>
     </div>
+    </div>
 
-
-      <div class="col-sm-12">
+    <div class="col-sm-12" style="float: left">
+        <div class="col-sm-12">
       <div class="line-dashed"></div>
       <label>内网</label>
         <section class="main padder">
@@ -89,6 +90,18 @@
             {% endfor %}
         </section>
     </div>
+    </div>
+
+    <div class="col-sm-12" style="float: left">
+        <div class="line-dashed"></div><br>
+
+        <div class="col-sm-12">
+            <iframe id="webssh" src="" style="height: 500px;width: 100%"></iframe>
+        </div>
+    </div>
+
+
+
   </section>
   <!-- footer -->
 

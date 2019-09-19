@@ -12,12 +12,10 @@ from infrastructure.task import version_update_task, check_go_task_status
 from django_celery_results.models import TaskResult
 from django.forms.models import model_to_dict
 import pytz
-import pymysql
 import time
 import uuid
-
-
-from django.db.models import Q
+import base64
+import socket
 
 # Create your views here.
 
@@ -48,17 +46,21 @@ def ip_interface(request):
     """
     logged_user = request.session.get("login_info", "").get("name", "")
     logged_role = request.session.get("login_info", "").get("role", "")
-    xshell_path = User.objects.get(login_name=logged_user).xshell_path
+    if logged_role not in ("master",):
+        return HttpResponseRedirect("/logout/")
     lan_servers = Server.objects.filter(wan_ip__icontains="192.168")
     wan_servers = Server.objects.exclude(wan_ip__icontains="192.168")
     host = request.GET.get("host", "")
     if host:
         host_wan_ip = Server.objects.get(wan_ip=host).wan_ip
-        host_password = Server.objects.get(wan_ip=host).password
+        host_password = base64.b64encode(Server.objects.get(wan_ip=host).password.encode("utf8")).decode("utf8")
         try:
-            subprocess.Popen(r"""{}\Xshell /url ssh://{}:{}@{}""".format(xshell_path, "root", host_password, host_wan_ip), shell=False)
+            s1 = socket.socket()
+            s1.connect((host_wan_ip, 22))
+            return HttpResponse("http://192.168.1.240:8888/?hostname={}&&username=root&&password={}".format(
+                                        host_wan_ip, host_password))
         except:
-            return HttpResponse("链接失败")
+            return HttpResponse("/ssh_failed_page/")
 
     return render(request, "ip_interface.html", locals())
 
@@ -93,71 +95,6 @@ def logout(request):
     except KeyError:
         pass
     return render(request, "login.html")
-
-
-@need_login
-@csrf_exempt
-def port_check(request):
-    """
-    检测端口
-    :param request:
-    1、检测开启的端口使用GET方法, 检测前端是否有使用GET方法传送的server_name属性，如果有检测传入的server_name对应的服务器开启的端口数
-       如果没有接收到server_name属性， 返回这个页面
-    2、使用POST方法，重启端口， 重启服务使用本地脚本，然后传送到目标服务器运行， 本地脚本的位置为/root/scripts/service_scrpits/
-
-    :return:
-    """
-    all_server = Server.objects.all()
-    shell_check_script = """
-        netstat -lntp 
-    
-    """
-    server_name = request.GET.get("server_name", "")
-    logged_user = request.session.get("login_info", "").get("name", "")
-    logged_role = request.session.get("login_info", "").get("role", "")
-    # 查询端口的时候
-    if server_name:
-        server = Server.objects.get(server_name=server_name)
-        host = {"hostname": server.wan_ip, "username": "root", "password": server.password, "port": 22}
-        try:
-            ssh = ssh_plugin.SSHConnect(host)
-        except paramiko.ssh_exception.NoValidConnectionsError:
-            return HttpResponse("连接失败，请确定该服务器在线或配置正确！")
-        result = ssh.run_command(shell_check_script)
-        port_list = re.findall(":[0-9]+", result)
-        last_result = set([i.replace(":", "") for i in port_list if int(i.replace(":", "")) > 1])
-        ssh.close()
-        return HttpResponse(",".join(last_result))
-    # 重启端口的时候
-    if request.POST:
-        serviceScript_basedir = r"/root/scripts/service_script"
-        server_name = request.POST.get("server_name", "")
-        port = request.POST.get("port", "")
-        action = request.POST.get("action", "")
-        print(server_name)
-        print(port)
-        try:
-            # 发生这个异常需要在RemoteServerService中增加这个服务器对应的端口信息
-            server = RemoteServerService.objects.get(ServiceAtServer__server_name=server_name, ServicePort=port)
-        except RemoteServerService.DoesNotExist:
-            return HttpResponse("{} 没有使用这个端口{}的相关信息，请在后台中配置！".format(server_name, port))
-        ServiceName = server.ServiceName
-        host = {"hostname": server.ServiceAtServer.wan_ip, "username": "root", "password": server.ServiceAtServer.password, "port": 22}
-
-        # 传送本地脚本到目标服务器
-        transport = ssh_plugin.SFTPConnect(host)
-        local_script = os.path.join(serviceScript_basedir, server_name + "_" + ServiceName)
-        print(local_script)
-        if not os.path.isfile(local_script):
-            return HttpResponse("本地没有相关的服务重启脚本，请在OMS服务器上先配置！ 服务器存放脚本文件路径为{}".format(str(local_script)))
-        remote_script = os.path.join("/tmp", server_name + "_" + ServiceName)
-        transport.send_file(local_script, remote_script)
-        # 远程执行脚本
-        ssh = ssh_plugin.SSHConnect(host)
-        result = ssh.run_command("sh {} {} && rm -rf {}".format(remote_script, action, remote_script))
-        return HttpResponse(result)
-
-    return render(request, "port_check.html", locals())
 
 
 @csrf_exempt
@@ -295,78 +232,6 @@ def docker_local_registry(request):
         images_name[rep] = tag[0]
     ssh.close()
     return render(request, "docker_local_registry.html", locals())
-
-
-@csrf_exempt
-def apk(request):
-    """
-    先拉取git到本地(local_workspace) 本地检查文件完整性和配置（主要是每个模块下的build.gradle和根工程下gradle.properties）
-
-    :param request:
-    :return:
-    """
-    logged_user = request.session.get("login_info", "").get("name", "")
-    logged_role = request.session.get("login_info", "").get("role", "")
-    # AndroidSDK, local_workspace, ProjectName, file_filter从后台配置中读取
-    AndroidSDK = r"/home/tangxinwu/Desktop/AndroidSDK"
-    local_workspace = r"/home/tangxinwu/Desktop/workspace"
-    ProjectName = "Android"
-    all_build_file_list = []
-    file_filter = {"build.gradle", "gradle.properties"}
-    for i in os.walk(local_workspace):
-        if i[2]:
-            for k in i[2]:
-                if k in file_filter:
-                    all_build_file_list.append(
-                        os.path.join(i[0], k).replace(os.path.join(local_workspace, ProjectName), "").replace("/", "", 1))
-
-    if request.POST:
-        file_content = request.POST.get("file_content", "")
-        action = request.POST.get("action", "")
-        select_config = request.POST.get("select_config", "")
-        config_path = os.path.join(os.path.join(local_workspace, ProjectName), select_config)
-        # 修改配置文件
-        if action == "modify":
-            f = CustomOpen.CustomOpen(config_path, "w")
-            file_content = file_content.replace("</br>", "\\n").replace("&nbsp;", "\r")
-            f.write(file_content)
-            f.close()
-            return HttpResponse("修改成功")
-        # 读取配置文件到前段显示
-        if action == "show":
-            f = CustomOpen.CustomOpen(config_path)
-            # 返回html能识别的版本文件内容
-            data = f.read().replace("\\n", "</br>").replace("\r", "&nbsp;")
-            f.close()
-            return HttpResponse(data)
-        # build apk
-        if action == "build":
-            # 增加java环境变量
-            old_env = os.environ["PATH"]
-            new_env = old_env + ":" + "/usr/local/jdk1.8.0_191/bin:/usr/local/gradle-4.4/bin"
-            os.environ["PATH"] = new_env
-            os.environ["CLASSPATH"] = "/usr/local/jdk1.8.0_191/lib/dt.jar:/usr/local/jdk1.8.0_191/lib/tools.jar"
-            os.environ["GRADLE_HOME"] = "/usr/local/gradle-4.4/"
-            os.chdir(os.path.join(local_workspace, ProjectName))
-            os.system("""echo 'sdk.dir={}' > {}""".format(AndroidSDK,
-                                                          os.path.join(os.path.join(local_workspace, ProjectName), "local.properties")))
-            build_cmd = """gradle clean build -x test --info > {}""".format(os.path.join(os.path.join(local_workspace, ProjectName), "build.log"))
-            process = subprocess.Popen(build_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-            result = (lambda x, y: x if x else y)(process.stdout.read(), process.stderr.read())
-            return HttpResponse(result)
-        # 获取build日志
-        if action == "log":
-            return_lines = 20
-            lines = request.POST.get("lines", "")
-            log_path = os.path.join(os.path.join(local_workspace, ProjectName), "build.log")
-            host = {"hostname": "localhost", "username": "tangxinwu", "password": "sakamotomaaya1", "port": 22}
-            cmd = """sed -n {},{}p {}""".format((lambda x: x if x else 1)((int(lines)-1)*return_lines),
-                                                int(lines)*return_lines, log_path)
-            print(cmd)
-            ssh = ssh_plugin.SSHConnect(host)
-            result = ssh.run_command(cmd)
-            return HttpResponse(json.dumps({"lines": lines, "result": result}, ensure_ascii=False))
-    return render(request, "apk.html", locals())
 
 
 @csrf_exempt
@@ -522,114 +387,6 @@ def go_task(request):
 
 
 @csrf_exempt
-def config_transfor(request):
-    """
-    转化普通的配置文件为新版的配置文件
-    :param request:
-    :return:
-    """
-    logged_user = request.session.get("login_info", "").get("name", "")
-    logged_role = request.session.get("login_info", "").get("role", "")
-    data = request.POST.get("data", "")
-    host = {
-        "hostname": "192.168.1.241",
-        "username": "root",
-        "password": "111111",
-        "port": "22"
-
-    }
-    if data:
-        escaped_data = data.replace("$", "\$")
-        ssh = ssh_plugin.SSHConnect(host)
-        # 写入数组的临时文件目录
-        test_file_path = r"/html/config_node/scripts/test.php"
-        clean_cache_cmd = """rm -rf /html/config_node/scripts/ini/test.php"""
-        write_cmd = """ cd /html/config_node/scripts/ && echo -e "<?php\\n" > {} && \
-         echo "{}" >> {} && \
-         /usr/local/php7.1.14/bin/php7.1 \
-         /html/config_node/scripts/arrtotext.php {} ./ini/""".format(test_file_path, escaped_data, test_file_path, test_file_path)
-        read_cmd = """cat /html/config_node/scripts/ini/test.php"""
-        clean_cache_result = ssh.run_command(clean_cache_cmd)
-        write_result = ssh.run_command(write_cmd)
-        read_result = ssh.run_command(read_cmd)
-        ssh.close()
-        return HttpResponse(read_result)
-    return render(request, "config_transfor.html", locals())
-
-
-@csrf_exempt
-def wiki_public(request):
-    """
-    把wiki的文档和用户关联起来，用于推送
-    有重复代码 注意优化
-    :param request:
-    :return:
-    """
-    wiki_database = {
-        "host": "192.168.1.234",
-        "user": "wiki",
-        "password": "123456",
-        "database": "mm_wiki"
-
-    }
-    conn = pymysql.connect(host=wiki_database.get("host"),
-                           user=wiki_database.get("user"),
-                           password=wiki_database.get("password"),
-                           database=wiki_database.get("database"))
-    cur = conn.cursor()
-    cur.execute("""SELECT document_id, name FROM mw_document;""")
-    all_document_name = cur.fetchall()
-    cur.execute("""SELECT user_id, username FROM mw_user;""")
-    all_users = cur.fetchall()
-    if request.POST:
-        action = request.POST.get("action", "")
-        document_data = request.POST.get("document_data", "")
-        user_data = request.POST.get("user_data", "")
-        if action == "follow_document":
-            if user_data != "all":
-                flag_cmd = """SELECT * FROM mw_follow where object_id={} and user_id={};""".format(eval(document_data)[0],
-                                                                                                   eval(user_data)[0])
-                cur.execute(flag_cmd)
-                check_exsited = cur.fetchall()
-                if check_exsited:
-                    return HttpResponse("已经关注过了，无需关注！")
-                else:
-                    add_cmd = """INSERT INTO mw_follow (user_id, object_id, create_time) VALUES ({}, {}, {});""".format(eval(user_data)[0],
-                                                                                                                         eval(document_data)[0],
-                                                                                                                         int(time.time()))
-                    print(add_cmd)
-                    cur.execute(add_cmd)
-                    cur.execute("commit;")
-                    return HttpResponse("已经关注成功！")
-            else:
-                check_user_cmd = """SELECT user_id FROM mw_user;"""
-                cur.execute(check_user_cmd)
-                user_ids = cur.fetchall()
-                for i in user_ids:
-                    flag_cmd = """SELECT * FROM mw_follow where object_id={} and user_id={};""".format(
-                        eval(document_data)[0],
-                        i[0])
-                    cur.execute(flag_cmd)
-                    check_exsited = cur.fetchall()
-                    if check_exsited:
-                        print("已经关注过了，无需关注！")
-                        continue
-                    else:
-
-
-                        add_cmd = """INSERT INTO mw_follow (user_id, object_id, create_time) VALUES ({}, {}, {});""".format(
-                            i[0],
-                            eval(document_data)[0],
-                            int(time.time()))
-                        print(add_cmd)
-                        cur.execute(add_cmd)
-                        cur.execute("commit;")
-                return HttpResponse("已经批量关注成功！")
-
-    return render(request, "wiki_public.html", locals())
-
-
-@csrf_exempt
 @need_login
 def self_invoke(request):
     """
@@ -688,6 +445,8 @@ def self_invoke_result(request):
     """
     logged_user = request.session.get("login_info", "").get("name", "")
     logged_role = request.session.get("login_info", "").get("role", "")
+    if logged_role not in ("auditing", "master"):
+        return HttpResponseRedirect("/logout/")
     all_invoke = SelfInvoke.objects.all()
     if request.POST:
         # 用于前端显示的字典
@@ -725,6 +484,11 @@ def self_invoke_result(request):
             SelfInvoke.objects.filter(InvokedToken=application_id_token.split("||")[1]).update(isdeal=1)
             return HttpResponse("已经成功处理申请请求!")
     return render(request, "self_invoke_result.html", locals())
+
+
+@csrf_exempt
+def ssh_failed_page(request):
+    return render(request, "ssh_failed_page.html", locals())
 
 
 @csrf_exempt

@@ -56,17 +56,16 @@
   <!-- nav -->
   <nav id="nav" class="nav-primary visible-lg nav-vertical">
     <ul class="nav" data-spy="affix" data-offset-top="50">
+        {% if logged_role == "master" %}
         <li><a href="/ip_interface/"><i class="icon-calendar icon-xlarge"></i>ip管理界面</a></li>
-{#        <li><a href="/port_check/"><i class="icon-calendar icon-xlarge"></i>端口检测</a></li>#}
+        {% endif %}
         <li ><a href="/version_update/"><i class="icon-calendar icon-xlarge"></i>版本更新</a></li>
         <li><a href="/logs_gather/"><i class="icon-calendar icon-xlarge"></i>日志界面</a></li>
         <li><a href="/shortcut/"><i class="icon-calendar icon-xlarge"></i>快捷入口</a></li>
         <li><a href="/docker_local_registry/"><i class="icon-calendar icon-xlarge"></i>docker本地仓库镜像列表</a></li>
-<!--        <li><a href="/apk/"><i class="icon-calendar icon-xlarge"></i>apk打包</a></li>-->
         <li><a href="/h5_update/"><i class="icon-calendar icon-xlarge"></i>h5更新</a></li>
         <li><a href="/go-task/"><i class="icon-calendar icon-xlarge"></i>go-task操作</a></li>
         <li><a href="/config_transfor/"><i class="icon-calendar icon-xlarge"></i>转换配置文件</a></li>
-        <li><a href="/self_invoke/"><i class="icon-calendar icon-xlarge"></i>自助申请流程</a></li>
         <li class="active"><a href="/self_invoke_result/"><i class="icon-calendar icon-xlarge"></i>自助申请流程审批界面</a></li>
     </ul>
   </nav>

@@ -18,7 +18,7 @@ $(function () {
        }
        $.post("/login/",{"login_name":login_name, "login_password":login_password}, function (result) {
           if (result == "succ"){
-              window.location.href = "/ip_interface/"
+              window.location.href = "/version_update/"
           }else {
               swal("出错啦!", "登录失败,确认用户名和密码是否正确!", "error");
           }

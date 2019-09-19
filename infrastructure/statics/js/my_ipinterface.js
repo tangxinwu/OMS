@@ -12,4 +12,10 @@ $(function () {
        });
     });
 
+    $(".item").off("onclick").on("click", function () {
+       let host = $(this).text();
+       $.get("/ip_interface/?host=" + host, function (result) {
+          $("#webssh").attr("src", result);
+       });
+    });
 });
