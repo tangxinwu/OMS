@@ -42,7 +42,7 @@
   <nav id="nav" class="nav-primary visible-lg nav-vertical">
     <ul class="nav" data-spy="affix" data-offset-top="50">
         {% if logged_role == "master" %}
-        <li><a href="/ip_interface/"><i class="icon-calendar icon-xlarge"></i>ip管理界面</a></li>
+        <li class="active"><a href="/ip_interface/"><i class="icon-calendar icon-xlarge"></i>ip管理界面</a></li>
         {% endif %}
         <li><a href="/version_update/"><i class="icon-calendar icon-xlarge"></i>版本更新</a></li>
         <li><a href="/logs_gather/"><i class="icon-calendar icon-xlarge"></i>日志界面</a></li>
@@ -72,7 +72,7 @@
     <div class="col-sm-12" style="float: left">
         <div class="col-sm-12">
         <label>外网</label>
-        <section class="main padder">
+        <section class="main padder" id="wan_zone">
             {% for ip in wan_servers %}
                     <div class="item"  data-mtpis='外网：{{ ip.wan_ip }}<br>内网：{{ ip.lan_ip }}<br><br>服务器名字:{{ ip.server_name }}<br>应用：{{ ip.applications }}<br>描述：{{ ip.descriptions }}<br>'>{{ ip.wan_ip }}</div>
             {% endfor %}
@@ -84,7 +84,7 @@
         <div class="col-sm-12">
       <div class="line-dashed"></div>
       <label>内网</label>
-        <section class="main padder">
+        <section class="main padder" id="lan_zone">
             {% for ip in lan_servers %}
                     <div class="item"  data-mtpis='外网：{{ ip.wan_ip }}<br>内网：{{ ip.lan_ip }}<br><br>服务器名字:{{ ip.server_name }}<br>应用：{{ ip.applications }}<br>描述：{{ ip.descriptions }}<br>'><a href="/index?host={{ ip.server_name }}" target="_self">{{ ip.wan_ip }}</a></div>
             {% endfor %}
@@ -92,13 +92,6 @@
     </div>
     </div>
 
-    <div class="col-sm-12" style="float: left">
-        <div class="line-dashed"></div><br>
-
-        <div class="col-sm-12">
-            <iframe id="webssh" src="" style="height: 500px;width: 100%"></iframe>
-        </div>
-    </div>
 
 
 

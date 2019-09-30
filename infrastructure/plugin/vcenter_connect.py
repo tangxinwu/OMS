@@ -8,9 +8,7 @@ from pyVim.connect import SmartConnect, SmartConnectNoSSL
 from abc import abstractmethod, ABC
 
 
-
 # 异常处理类
-
 
 class CreateSnapshotParamError(Exception):
     """
@@ -220,11 +218,10 @@ class StartStopVM(Vmware):
         处理
         :return:
         """
-
-        # vm = self._connection.content.searchIndex.FindByUuid(None, self._args.get("uuid"), True, True)
-        vm = self._connection.content.searchIndex.FindByIp(None, self._args.get("host"), True)
-        print(vm.summary.config.instanceUuid)  # 查找vm uuid
-        exit(0)
+        vm = self._connection.content.searchIndex.FindByUuid(None, self._args.get("uuid"), True, True)
+        # vm = self._connection.content.searchIndex.FindByIp(None, self._args.get("host"), True)
+        # print(vm.summary.config.instanceUuid)  # 查找vm uuid
+        # exit(0)
         if not action:
             power_status = vm.summary.runtime.powerState
             if power_status == "poweredOff":
@@ -250,6 +247,7 @@ class StartStopVM(Vmware):
         """
         self.handler()[0].PowerOn()
         return "成功开启虚拟机"
+
 
 # 自测试
 if __name__ == "__main__":
