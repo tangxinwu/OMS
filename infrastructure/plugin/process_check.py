@@ -162,7 +162,6 @@ class GoTaskCheck(ProcessCheck):
         self._ssh.run_command("""\\cp -rf {} {}""".format(config_path, bak_path))
         self._ssh.run_command("""echo '{}' > {}""".format(config_content.replace("'", '"'), config_path))
 
-
     def stop_process(self):
         """
         停止go-task进程

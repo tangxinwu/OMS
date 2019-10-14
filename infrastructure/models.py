@@ -33,16 +33,32 @@ class ApplicationLevel(models.Model):
         return self.application_level
 
 
+class ServerType(models.Model):
+    """
+        服务器的类型，本地虚拟机还是物理机还是阿里云服务器
+    """
+    ServerTypeName = models.CharField("服务器的类型名", max_length=50)
+
+    class Meta:
+        ordering = ["ServerTypeName"]
+        verbose_name_plural = "服务器类型名"
+
+    def __str__(self):
+        return self.ServerTypeName
+
+
 class Server(models.Model):
     """
     标识服务器的名字和功能
     """
     server_name = models.CharField("服务器名字", max_length=50)
+    server_type = models.ForeignKey(ServerType, "服务器的类型", default=1)
     wan_ip = models.GenericIPAddressField("外网ip")
     lan_ip = models.GenericIPAddressField("内网ip")
     applications = models.CharField("应用", max_length=500, blank=True,null=True)
     descriptions = models.CharField("描述", max_length=500, blank=True, null=True)
     password = models.CharField("登陆密码", max_length=50, blank=True, null=True)
+    aliyun_server_expire = models.DateTimeField("阿里云服务器过期时间（如果为空就不是阿里云服务器）", blank=True, null=True)
 
     class Meta:
         ordering = ["server_name"]
@@ -198,7 +214,5 @@ class SelfInvoke(models.Model):
 
     def __str__(self):
         return self.InVokedUser + "在{}申请了流程".format(str(self.InVokedTime))
-
-
 
 

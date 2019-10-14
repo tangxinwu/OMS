@@ -63,50 +63,84 @@
 # f.write(response2.content.decode("utf8"))
 #
 # f.close()
+###############################################################################
 
+# file_path = """/home/tangxinwu/Downloads/xhdj_game_data.sql"""
+#
+# f = open(file_path)
+#
+# f1 = open("/home/tangxinwu/Downloads/xhdj_game_data.txt", "a")
+# data = f.readlines()
+#
+#
+# class Count:
+#     def __init__(self, table_name):
+#         self.table_name = table_name
+#         self.count = 0
+#
+#
+# for i in data:
+#     if i.startswith("CREATE TABLE"):
+#         table_name = i.split(" ")[2]
+#         print(table_name, "table_name")
+#
+#         p = Count(table_name)
+#
+#         f1.write(table_name + "||")
+#         continue
+#     if "COMMENT" in i and "ENGINE=InnoDB" not in i:
+#         p.count += 1
+#         continue
+#     if "int" in i:
+#         p.count += 1
+#         continue
+#     if "datetime" in i:
+#         p.count += 1
+#         continue
+#     if "ENGINE=InnoDB" in i:
+#         try:
+#             table_comment = i.split("COMMENT=")[1]
+#         except IndexError:
+#             table_comment = "表备注为空" + "\n"
+#         f1.write(str(p.count) + "||")
+#         f1.write(table_comment)
+#
+#         continue
+#
+#
+# f.close()
+# f1.close()
+###################################################
+#
+# from openpyxl import Workbook
+# from openpyxl import load_workbook
+#
+# wb = load_workbook("""/home/tangxinwu/Documents/(1).xlsx""")
+#
+# ws = wb.active
+# wb.guess_types = True
+# cols = []
+#
+# rows = []
+# for col in ws.iter_cols():
+#     cols.append(col)
+#
+# for row in ws.iter_rows():
+#     rows.append(row)
+#
+# print(rows)
+#
+# print(len(rows))
+#
+# data = dict()
+# for i in rows:
+#     temp_name = i[2].value.replace(":", "/")
+#     if "/" in temp_name:
+#         temp_list = temp_name.split("/")
+#         if not temp_list[0]:
+#             controller_name = temp_list[1]
+#         else:
+#             controller_name = temp_list[1]
 
-file_path = """/home/tangxinwu/Downloads/xhdj_game_data.sql"""
+###################
 
-f = open(file_path)
-
-f1 = open("/home/tangxinwu/Downloads/xhdj_game_data.txt", "a")
-data = f.readlines()
-
-
-class Count:
-    def __init__(self, table_name):
-        self.table_name = table_name
-        self.count = 0
-
-
-for i in data:
-    if i.startswith("CREATE TABLE"):
-        table_name = i.split(" ")[2]
-        print(table_name, "table_name")
-
-        p = Count(table_name)
-
-        f1.write(table_name + "||")
-        continue
-    if "COMMENT" in i and "ENGINE=InnoDB" not in i:
-        p.count += 1
-        continue
-    if "int" in i:
-        p.count += 1
-        continue
-    if "datetime" in i:
-        p.count += 1
-        continue
-    if "ENGINE=InnoDB" in i:
-        try:
-            table_comment = i.split("COMMENT=")[1]
-        except IndexError:
-            table_comment = "表备注为空" + "\n"
-        f1.write(str(p.count) + "||")
-        f1.write(table_comment)
-
-        continue
-
-
-f.close()
-f1.close()

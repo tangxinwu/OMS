@@ -4,8 +4,16 @@ from infrastructure.models import *
 # Register your models here.
 
 
+class ServerTypeAdmin(admin.ModelAdmin):
+    list_display = ["ServerTypeName"]
+
+
+admin.site.register(ServerType, ServerTypeAdmin)
+
+
 class ServeAdmin(admin.ModelAdmin):
-    list_display = ["server_name", "wan_ip", "lan_ip", "applications", "descriptions",]
+    list_display = ["server_name", "wan_ip", "lan_ip", "applications", "descriptions",
+                    "aliyun_server_expire", "server_type"]
 
 
 admin.site.register(Server, ServeAdmin)

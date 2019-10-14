@@ -8,12 +8,20 @@ import datetime
 import threading
 import schedule
 import daemon
+import requests
 
-
+# 加载连接vcenter模块
 try:
     from infrastructure.plugin.vcenter_connect import CreateSnapshot
 except ImportError:
     from vcenter_connect import CreateSnapshot
+
+# 加载发送邮件模块
+try:
+    from infrastructure.plugin.CustomEmail import SendMail
+except ImportError:
+    from CustomEmail import SendMail
+
 
 
 class MakeSnapshotThreading:
@@ -126,6 +134,25 @@ def snapshot_timer():
             continue
 
 
+def aliyun_expire_check_timer():
+    """
+    阿里云过期提醒
+    :param alter_time ：修改这个参数的默认值可以设置时间报警的阀值
+    :param expire_check_url: 修改确认过期查询的接口地址
+    :return:
+    """
+    check_time = "00:00"
+
+    def expire_check(alert_time=10, expire_check_url="http://127.0.0.1:8001/aliyun_check/"):
+        aliyun_expire_data = eval(requests.get(expire_check_url).content.decode("utf8"))
+        current_time = datetime.datetime.now()
+        for hostname, expire_time in aliyun_expire_data.items():
+            temp_date = datetime.datetime.strptime(expire_time.split("+")[0], "%Y-%m-%d %H:%M:%S") - current_time
+            if abs(temp_date.days) <= alert_time:
+                p = SendMail()
+                p.send_mail("阿里云过期提醒", "主机{} 即将到期，到期时间为{}".format(hostname, expire_time))
+    schedule.every().day.at(check_time).do(expire_check)
+
 # def test_timer():
 #     def test():
 #         f = open("/tmp/test.log", "a+")
@@ -143,5 +170,10 @@ if __name__ == "__main__":
         while True:
             schedule.run_pending()
             time.sleep(1)
-
+    # for task in all_locals:
+    #     if task.endswith("_timer"):
+    #         all_locals.get(task)()
+    # while True:
+    #     schedule.run_pending()
+    #     time.sleep(1)
 

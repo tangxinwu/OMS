@@ -492,6 +492,20 @@ def ssh_failed_page(request):
 
 
 @csrf_exempt
+def aliyun_check(request):
+    """
+    配合定时任务 检测阿里云过期时间的接口
+    :param request:
+    :return:
+    """
+    all_aliyun_server = Server.objects.filter(aliyun_server_expire__isnull=False)
+    temp_dict = dict()
+    for aliyun_server in all_aliyun_server:
+        temp_dict[aliyun_server.wan_ip] = str(aliyun_server.aliyun_server_expire.astimezone(pytz.timezone("Asia/Shanghai")))
+    return HttpResponse(json.dumps(temp_dict, ensure_ascii=False))
+
+
+@csrf_exempt
 def test1(request, test_params):
     if request.method == "POST":
         id = request.POST.get("id", "")
@@ -503,3 +517,4 @@ def test1(request, test_params):
         return HttpResponse("Which one do u want to delete? delete is {}".format(id))
     print(test_params)
     return HttpResponse("Fail you lost everything...., Because you are {}".format(test_params))
+
