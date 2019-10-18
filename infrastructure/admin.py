@@ -49,7 +49,7 @@ admin.site.register(RemoteServerService, RemoteServerServiceAdmin)
 
 
 class UpdateLogAdmin(admin.ModelAdmin):
-    list_display = ["UpdateName", "UpdateTaskId", "UpdateUser", "UpdateTime"]
+    list_display = ["UpdateName", "UpdateTaskId", "UpdateUser", "UpdateTime", "UpdateTags", "UpdateDescription"]
 
 
 admin.site.register(UpdateLogs, UpdateLogAdmin)

@@ -13,14 +13,18 @@ import paramiko
 def version_update_task(application_id):
     selected_application = Application.objects.get(id=int(application_id.split("_")[0]))
     application_time_flag = application_id.split("_")[1]
+    application_tags = application_id.split("_")[2]
     print("打印time flag", application_time_flag)
     # 运行本地拉取脚本
-    pull_cmd = "/usr/bin/sh {} {} {} {}".format(selected_application.ApplicationUpdateScriptPath,
+    # pull_cmd = "/usr/bin/sh {} {} {} {} {}".format(selected_application.ApplicationUpdateScriptPath,
+    #                                          selected_application.ApplicationName,
+    #                                           (lambda x: x if x else "master")(selected_application.ApplicationBranch),
+    #                                           application_time_flag, application_tags)
+    pull_cmd = "{} {} {} {} {}".format(selected_application.ApplicationUpdateScriptPath,
                                              selected_application.ApplicationName,
                                               (lambda x: x if x else "master")(selected_application.ApplicationBranch),
-                                              application_time_flag)
+                                              application_time_flag, application_tags)
     print(pull_cmd)
-
     p = subprocess.Popen(pull_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     stdout = p.stdout.read().decode("utf8")
     stderror = p.stderr.read().decode("utf8")
@@ -33,8 +37,12 @@ def version_update_task(application_id):
     transport.send_file(selected_application.ApplicationUpdateScriptPathAfter,
                         os.path.join("/tmp", os.path.basename(selected_application.ApplicationUpdateScriptPathAfter)))
     # 传送tar文件到remote服务器
-    transport.send_file("/root/workspace/{}/{}_{}.tar".format(selected_application.ApplicationName,
-                                                           selected_application.ApplicationName,
+    # transport.send_file("/root/workspace/{}/{}_{}.tar".format(selected_application.ApplicationName,
+    #                                                        selected_application.ApplicationName,
+    #                                                           application_time_flag),
+    #                     "/tmp/{}_{}.tar".format(selected_application.ApplicationName, application_time_flag))
+    transport.send_file("/tmp/workspace/{}/{}_{}.tar".format(selected_application.ApplicationName,
+                                                              selected_application.ApplicationName,
                                                               application_time_flag),
                         "/tmp/{}_{}.tar".format(selected_application.ApplicationName, application_time_flag))
     transport.close()
@@ -45,6 +53,7 @@ def version_update_task(application_id):
         os.path.join("/tmp", os.path.basename(selected_application.ApplicationUpdateScriptPathAfter)),
         selected_application.ApplicationPath,
         application_time_flag)
+    print(cmd)
     result = ssh.run_command(cmd)
     return (lambda x, y: x if x else y)(stdout, stderror) + result
 

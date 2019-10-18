@@ -80,13 +80,13 @@
     </div>
 
       <div class="col-sm-12">
-          <div class="col-sm-6">
+          <div class="col-sm-4">
               <select class="form-control" id="applications">
                     <option value="">选择应用名字</option>
                     {% if logged_role == "master" %}
                         {% for application in all_application %}
                             <option value="{{ application.id }}">
-                                {{ application }}   ({{ application.Description }})
+                                {{ application }}使用分支{% if application.ApplicationBranch %}{{ application.ApplicationBranch }} {% else %} MASTER {% endif %}在{{ application.ApplicationServer }} ({{ application.Description }})
                             </option>
                         {% endfor %}
                     {% else %}
@@ -100,7 +100,12 @@
                     {% endif %}
               </select>
           </div>
-          <div class="col-sm-6">
+          <div class="col-sm-4">
+              <select class="form-control" id="tags">
+                    <option value="">选择tags</option>
+              </select>
+          </div>
+          <div class="col-sm-4">
               <select class="form-control" id="keywords_content" >
                     <option value="">选择过滤关键字</option>
                     {% for application_title in all_application_title %}
@@ -140,9 +145,13 @@
                                         <thead>
                                             <th>TASK ID</th>
                                             <th>更新项目</th>
+                                            <th>更新服务器</th>
+                                            <th>更新tag</th>
+                                            <th>更新分支</th>
                                             <th>状态</th>
                                             <th>更新时间</th>
                                             <th>更新人</th>
+                                            <th>tags更新说明</th>
                                         </thead>
                                         <tbody id="task_table">
                                         </tbody>

@@ -62,11 +62,11 @@ SECRET_KEY = '(v*e9rzjhqqpw1idt1s1!n^x!lb4u5i(c3d*)0$ow9n&gj*-h1'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["192.168.1.240", "django", "127.0.0.1", "192.168.1.191"]
+ALLOWED_HOSTS = ["192.168.1.240", "django", "127.0.0.1", "192.168.1.191", "192.168.10.69"]
 
 # 设置session 超时时间
-SESSION_SAVE_EVERY_REQUEST = True
-SESSION_COOKIE_AGE = 60*5
+# SESSION_SAVE_EVERY_REQUEST = True
+# SESSION_COOKIE_AGE = 60*5
 
 # Application definition
 

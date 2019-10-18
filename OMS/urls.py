@@ -34,4 +34,5 @@ urlpatterns = [
     path("self_invoke_result/", iv.self_invoke_result),        # 自助申请审批界面
     path("ssh_failed_page/", iv.ssh_failed_page),              # web链接SSH失败的失败界面
     path("aliyun_check/", iv.aliyun_check),                    # 检测阿里云服务器
+    path("version_tags_check/", iv.version_tags_check)         # 检测某项目的tags （get方法传参数）
 ]

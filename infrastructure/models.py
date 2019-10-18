@@ -105,8 +105,7 @@ class Application(models.Model):
         verbose_name_plural = "所有应用"
 
     def __str__(self):
-        return self.ApplicationName + "在 " + self.ApplicationServer.wan_ip + " 使用分支" \
-               + (lambda x: x if x else "master")(self.ApplicationBranch)
+        return self.ApplicationName
 
 
 class ApplicationLogs(models.Model):
@@ -149,9 +148,13 @@ class UpdateLogs(models.Model):
     更新的日志
     """
     UpdateName = models.CharField("更新的中文名字", max_length=200)
+    UpdateServer = models.CharField("更新的服务器", max_length=100, blank=True, null=True)
     UpdateTaskId = models.CharField("更新的taskID", max_length=200)
     UpdateTime = models.DateTimeField("更新task的时间", auto_now=True, blank=True, null=True)
     UpdateUser = models.CharField("更新人", max_length=100, blank=True, null=True)
+    UpdateTags = models.CharField("更新的tags", max_length=100, blank=True, null=True)
+    UpdateBranch = models.CharField("更新的分支", max_length=50, blank=True, null=True)
+    UpdateDescription = models.TextField("本次更新的内容", max_length=500, blank=True, null=True)
 
     class Meta:
         ordering = ['UpdateName']

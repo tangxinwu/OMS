@@ -4,7 +4,7 @@ from infrastructure.models import *
 from django.views.decorators.csrf import csrf_exempt
 import subprocess
 import paramiko
-from infrastructure.plugin import ssh_plugin, CustomOpen, process_check, vcenter_connect, CustomEmail
+from infrastructure.plugin import ssh_plugin, CustomOpen, process_check, vcenter_connect, CustomEmail, gogs_repo_check
 import os
 import re
 import json
@@ -16,6 +16,7 @@ import time
 import uuid
 import base64
 import socket
+import requests
 
 # Create your views here.
 
@@ -108,6 +109,7 @@ def version_update(request):
          然后再传送到目标服务器的/tmp目录下 然后解压选取src文件夹覆盖（这个操作是写在shell脚本中）
     2019-01-15增加使用mq 异步同步机制 ， 使用django-celery
     version_update_task就是task任务的主程序
+    2019-10-16 前端增加传入tags 可以根据仓库项目有的tags来拉取代码， 对应的拉取tags
     :param request:
     :return:
     """
@@ -117,16 +119,40 @@ def version_update(request):
     all_application_title = set([i.ApplicationName for i in all_application])
     if request.POST:
         application_id = request.POST.get("application_id", "")
-        result = version_update_task.apply_async((str(application_id) + "_" + str(int(time.time())),),
+        application_tags = request.POST.get("application_tags", "NullTags")
+        result = version_update_task.apply_async((str(application_id) + "_" + str(int(time.time())) + "_" + application_tags,),
                                                  queue="update_version",
                                                  routing_key="task_a")
+        # 尝试获取tags对应的更新说明
+        UpdateDescription = requests.get("http://" + request.get_host() + "/version_tags_check/?query_type={}&project_name={}".format(application_tags, application_id)).content.decode("utf8")
         # try:
-        UpdateLogs.objects.create(UpdateName=Application.objects.get(id=application_id),
-                                  UpdateTaskId=result, UpdateUser=logged_user)
+        UpdateLogs.objects.create(UpdateName=Application.objects.get(id=application_id),UpdateServer=Application.objects.get(id=application_id).ApplicationServer,
+                                  UpdateTaskId=result, UpdateUser=logged_user, UpdateTags=application_tags,
+                                  UpdateBranch=(lambda x: (lambda y: y if y else "master")(x) if not application_tags else "")(Application.objects.get(id=application_id).ApplicationBranch),
+                                  UpdateDescription=UpdateDescription)
         return HttpResponse("任务(id={})已经开始".format(result))
         # except:
         #     return HttpResponse("任务(id={})开始失败".format(result))
     return render(request, "version_update.html", locals())
+
+
+@csrf_exempt
+def version_tags_check(request):
+    """
+    查找当前project_name（项目名）对应的所有的tags
+    当query_type为all_tags的时候返回所有该项目的tags用||分割开来
+    当query_type为其他的时候 返回该tags对应的tags内容（升级内容）
+    project_name ：
+            可以传入数字 如果是数字 从Application 中返回ApplicationName
+    :param request:
+    :return:
+    """
+    query_type = request.GET.get("query_type", "")
+    project_name = (lambda x: x if not re.findall("[0-9]+", x) else Application.objects.get(id=x).ApplicationName)(request.GET.get("project_name", ""))
+    parms_list = ["database", "query_type", "project_name"]
+    argvs = ["--database", "gogs", "--query_type", query_type, "--project_name", project_name]
+    gogs_check_process = gogs_repo_check.VersionUpdateConnectDB(parms_list, argvs)
+    return HttpResponse(gogs_check_process.data)
 
 
 @csrf_exempt
@@ -309,12 +335,12 @@ def check_log(request):
             for i in checked_objects:
                 try:
                     update_logs_object = TaskResult.objects.get(task_id=i.UpdateTaskId)
-                    last_data[i.UpdateTaskId] = [i.UpdateName, update_logs_object.status,
+                    last_data[i.UpdateTaskId] = [i.UpdateName, i.UpdateServer, i.UpdateTags, i.UpdateBranch, update_logs_object.status,
                                             str(update_logs_object.date_done.astimezone(pytz.timezone("Asia/Shanghai"))),
                                                  i.UpdateUser]
                 except TaskResult.DoesNotExist:
                     # updateLog表里面有这个task id 但是TaskResult不存在的，显示PROCESSING
-                    last_data[i.UpdateTaskId] = [i.UpdateName, "PROCESSING", "waiting", "waiting"]
+                    last_data[i.UpdateTaskId] = [i.UpdateName, "PROCESSING", "waiting", "waiting", "waiting", "waiting", "waiting"]
             return HttpResponse(json.dumps(last_data, ensure_ascii=False))
         if action == "detail_check":
             task_id = request.POST.get("task_id", "")
