@@ -31,38 +31,38 @@
 #     path = r"/home/tangxinwu/Desktop/test_modify"
 #     main(path)
 
-#
-# import requests
-#
-# request_url = "http://192.168.1.246:3000/user/login"
-#
-# post_data = {
-#     "_csrf": "e6jpcDd1BOU1xXAF-v_bRveZwvQ6MTU2ODk2MTM1MTk1MTUyNTQ4MQ==",
-#     "user_name": "zhangpengbo",
-#     "password": "xiaohu123"
-#
-# }
-#
-#
-# next_url = "http://192.168.1.246:3000/zhangpengbo/web_app"
-#
-# get_header = {
-#     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36",
-#     "Cookie": "lang=zh-CN; i_like_gogits=921323a619781a60; _csrf=e6jpcDd1BOU1xXAF-v_bRveZwvQ6MTU2ODk2MTM1MTk1MTUyNTQ4MQ%3D%3D"
-# }
-# index_page = requests.get(request_url, headers=get_header)
-#
-# response = requests.post(request_url, post_data, headers=get_header)
-#
-#
-# response2 = requests.get(next_url, headers=get_header, cookies=response.cookies)
-#
-# # response3 = requests.get()
-# f = open("/home/tangxinwu/Desktop/web_app_interface.html", "w")
-#
-# f.write(response2.content.decode("utf8"))
-#
-# f.close()
+
+import requests
+
+request_url = "http://192.168.1.246:3000/user/login"
+
+post_data = {
+    # "_csrf": "e6jpcDd1BOU1xXAF-v_bRveZwvQ6MTU2ODk2MTM1MTk1MTUyNTQ4MQ==",
+    "user_name": "zhangpengbo",
+    "password": "xiaohu123"
+
+}
+session = requests.session()
+
+next_url = "http://192.168.1.246:3000/zhangpengbo/web_app"
+
+get_header = {
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36",
+    # "Cookie": "lang=zh-CN; i_like_gogits=921323a619781a60; _csrf=e6jpcDd1BOU1xXAF-v_bRveZwvQ6MTU2ODk2MTM1MTk1MTUyNTQ4MQ%3D%3D"
+}
+index_page = session.get(request_url, headers=get_header)
+
+response = session.post(request_url, post_data, headers=get_header)
+
+
+response2 = session.get(next_url, headers=get_header)
+
+# response3 = requests.get()
+f = open("/home/tangxinwu/Desktop/web_app_interface.html", "w")
+
+f.write(response2.content.decode("utf8"))
+
+f.close()
 ###############################################################################
 
 # file_path = """/home/tangxinwu/Downloads/xhdj_game_data.sql"""
@@ -143,4 +143,23 @@
 #             controller_name = temp_list[1]
 
 ###################
+
+# import JsonModel
+#
+# s1 = JsonModel.SeriesBar(name="test内容", data=[1,2,3])
+#
+# q = JsonModel.GenJSONBar(title="测试图表内容", tooltip=True, )
+
+import random
+
+# print(random.randint(0, 26))
+
+# print(ord("t"))
+
+# jsad#%#$%%#qjwidkqw
+
+
+
+
+
 

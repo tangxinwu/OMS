@@ -93,7 +93,7 @@
                         {% for application in all_application %}
                             {% if application.ApplicationLevel.application_level == "测试" %}
                             <option value="{{ application.id }}">
-                                {{ application }}   ({{ application.Description }})
+                                {{ application }}使用分支{% if application.ApplicationBranch %}{{ application.ApplicationBranch }} {% else %} MASTER {% endif %}在{{ application.ApplicationServer }} ({{ application.Description }})
                             </option>
                             {% endif %}
                         {% endfor %}

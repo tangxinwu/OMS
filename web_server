@@ -1,5 +1,12 @@
 #! /bin/bash
 
+# install depended lib for python3
+
+# sudo pip3 install django_celery_results
+# sudo pip3 install django-celery
+# sudo pip3 install pyVmomi
+# sudo pip3 install pymysql
+
 # variables for server
 work_path=/OMS
 port=10088

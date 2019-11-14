@@ -4,7 +4,7 @@ from infrastructure.models import *
 from django.views.decorators.csrf import csrf_exempt
 import subprocess
 import paramiko
-from infrastructure.plugin import ssh_plugin, CustomOpen, process_check, vcenter_connect, CustomEmail, gogs_repo_check
+from infrastructure.plugin import ssh_plugin, CustomOpen, process_check, vcenter_connect, CustomEmail, gogs_repo_check, login_plugin
 import os
 import re
 import json
@@ -23,12 +23,15 @@ import requests
 
 def need_login(func):
     """
-    登陆装饰器
-    :param func: 传入装饰函数
+    登录用装饰器
+    :param func:
     :return:
     """
     def _wapper(request):
-        if not request.session.get("login_info", ""):
+        auth_process = login_plugin.LoginSession(request)
+        print(auth_process())
+        if not auth_process():
+            auth_process.clean_cache()
             return HttpResponseRedirect("/login/")
         else:
             return func(request)
@@ -68,34 +71,32 @@ def ip_interface(request):
 
 @csrf_exempt
 def login(request):
-    """
-    登入模块
-    :param request:
-    :return:
-    """
-    if request.method == "POST":
-        login_name = request.POST.get("login_name", "")
-        login_password = request.POST.get("login_password", "")
-        result = User.objects.filter(login_name=login_name, login_password=login_password)
-        if result:
-            request.session["login_info"] = {"name": login_name, "role": result[0].role_type.RoleType}
-            return HttpResponse("succ")
+    if request.POST:
+        auth_message = {}
+        avalible_keys = ["login_name", "login_password"]
+        for key in avalible_keys:
+            auth_message[key] = request.POST.get(key, "")
+        if all(auth_message.values()):
+            auth_process = login_plugin.LoginSession(request, auth_message.get("login_name"), auth_message.get("login_password"))
+            if not auth_process():
+                auth_process.clean_cache()
+                return HttpResponse("failed")
+            else:
+                return HttpResponse("succ")
         else:
-            return HttpResponse("failed")
+            return HttpResponse("参数错误！")
     return render(request, "login.html", locals())
 
 
 def logout(request):
     """
-    登出模块
+    登出接口， 清除session和redis
     :param request:
     :return:
     """
-    try:
-        del request.session["login_info"]
-    except KeyError:
-        pass
-    return render(request, "login.html")
+    logout_process = login_plugin.LoginSession(request)
+    logout_process.clean_cache()
+    return HttpResponse("已经成功登出！")
 
 
 @csrf_exempt
@@ -529,6 +530,16 @@ def aliyun_check(request):
     for aliyun_server in all_aliyun_server:
         temp_dict[aliyun_server.wan_ip] = str(aliyun_server.aliyun_server_expire.astimezone(pytz.timezone("Asia/Shanghai")))
     return HttpResponse(json.dumps(temp_dict, ensure_ascii=False))
+
+
+@csrf_exempt
+def show_3rd_custom_detail(request):
+    """
+    把数据库中第三方消费记录
+    :param request:
+    :return:
+    """
+    return HttpResponse("生成第三方消费记录数据接口")
 
 
 @csrf_exempt
