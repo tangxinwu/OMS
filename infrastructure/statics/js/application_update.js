@@ -80,6 +80,12 @@ $(function () {
 			confirmButtonColor: "#ec6c62"
 			}, function() {
 				$.post("/version_update/", {"application_id": application_id,"application_tags":application_tags} ,function (result) {
+				    // console.log(result);
+				        if (result.indexOf("DOCTYPE html") >= 1){
+				            swal("出错啦!", "您需要重新登录!", "error");
+				            window.location.href = "/login/";
+				            return false;
+                        }
                         $("#update_result").append(result);
                         refresh_log();
                         swal("操作成功!", "已成功发送更新请求！", "success");

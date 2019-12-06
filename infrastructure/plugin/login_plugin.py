@@ -10,7 +10,7 @@ class LoginSession:
     匹配成功写入redis, 设置过期时间默认600秒
     """
     def __init__(self, request, logged_username="", logged_password="", redis_host="127.0.0.1",
-                 redis_port="6379", redis_db=0, expire=6000):
+                 redis_port="6379", redis_db=0, expire=30):
         """
         :param request 传入的http request
         :param logged_username: 传入的登录的用户名

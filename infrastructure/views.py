@@ -29,7 +29,6 @@ def need_login(func):
     """
     def _wapper(request):
         auth_process = login_plugin.LoginSession(request)
-        print(auth_process())
         if not auth_process():
             auth_process.clean_cache()
             return HttpResponseRedirect("/login/")
@@ -285,7 +284,7 @@ def h5_update(request):
                                                  (lambda x: x if x else "master")(selected_application.ApplicationBranch),
                                                  time_flag)
 
-        p = subprocess.Popen(pull_cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        p = subprocess.Popen(pull_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         stdout = p.stdout.read().decode("utf8")
         stderror = p.stderr.read().decode("utf8")
         # 传送脚本到remote服务器 ####
