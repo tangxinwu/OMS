@@ -73,6 +73,9 @@
         {% if logged_role == "auditing" %}
         <li><a href="/self_invoke_result/"><i class="icon-calendar icon-xlarge"></i>自助申请流程审批界面</a></li>
         {% endif %}
+        {% if logged_role == "master" %}
+        <li><a href="/sync_db/"><i class="icon-calendar icon-xlarge"></i>数据库同步</a></li>
+        {% endif %}
     </ul>
   </nav>
   <!-- / nav -->

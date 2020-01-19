@@ -30,39 +30,39 @@
 # if __name__ == "__main__":
 #     path = r"/home/tangxinwu/Desktop/test_modify"
 #     main(path)
-
-
-import requests
-
-request_url = "http://192.168.1.246:3000/user/login"
-
-post_data = {
-    # "_csrf": "e6jpcDd1BOU1xXAF-v_bRveZwvQ6MTU2ODk2MTM1MTk1MTUyNTQ4MQ==",
-    "user_name": "zhangpengbo",
-    "password": "xiaohu123"
-
-}
-session = requests.session()
-
-next_url = "http://192.168.1.246:3000/zhangpengbo/web_app"
-
-get_header = {
-    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36",
-    # "Cookie": "lang=zh-CN; i_like_gogits=921323a619781a60; _csrf=e6jpcDd1BOU1xXAF-v_bRveZwvQ6MTU2ODk2MTM1MTk1MTUyNTQ4MQ%3D%3D"
-}
-index_page = session.get(request_url, headers=get_header)
-
-response = session.post(request_url, post_data, headers=get_header)
-
-
-response2 = session.get(next_url, headers=get_header)
-
-# response3 = requests.get()
-f = open("/home/tangxinwu/Desktop/web_app_interface.html", "w")
-
-f.write(response2.content.decode("utf8"))
-
-f.close()
+#
+#
+# import requests
+#
+# request_url = "http://192.168.1.246:3000/user/login"
+#
+# post_data = {
+#     # "_csrf": "e6jpcDd1BOU1xXAF-v_bRveZwvQ6MTU2ODk2MTM1MTk1MTUyNTQ4MQ==",
+#     "user_name": "zhangpengbo",
+#     "password": "xiaohu123"
+#
+# }
+# session = requests.session()
+#
+# next_url = "http://192.168.1.246:3000/zhangpengbo/web_app"
+#
+# get_header = {
+#     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36",
+#     # "Cookie": "lang=zh-CN; i_like_gogits=921323a619781a60; _csrf=e6jpcDd1BOU1xXAF-v_bRveZwvQ6MTU2ODk2MTM1MTk1MTUyNTQ4MQ%3D%3D"
+# }
+# index_page = session.get(request_url, headers=get_header)
+#
+# response = session.post(request_url, post_data, headers=get_header)
+#
+#
+# response2 = session.get(next_url, headers=get_header)
+#
+# # response3 = requests.get()
+# f = open("/home/tangxinwu/Desktop/web_app_interface.html", "w")
+#
+# f.write(response2.content.decode("utf8"))
+#
+# f.close()
 ###############################################################################
 
 # file_path = """/home/tangxinwu/Downloads/xhdj_game_data.sql"""
@@ -160,6 +160,64 @@ import random
 
 
 
+#########################
+# import os
+# import random
+#
+# pic_path = """/home/tangxinwu/Desktop/鬼刀"""
+#
+# pic_list = [i for i in os.listdir(pic_path) if i.endswith(".jpg")]
+#
+#
+# print(pic_list)
+# change_cmd = """gsettings set com.deepin.wrap.gnome.desktop.background picture-uri "{}" """.format(os.path.join(pic_path, pic_list[random.randint(0, len(pic_list) - 1)]))
+#
+# print(change_cmd)
+#
+# os.system(change_cmd)
+
+
+import difflib
+
+compare = difflib.HtmlDiff()
+
+f1 = open("/home/tangxinwu/Desktop/test1.txt")
+
+f2 = open("/home/tangxinwu/Desktop/test2.txt")
+
+report = open("/home/tangxinwu/Desktop/report.html", "w+")
+
+f1_text = f1.readlines()
+
+f2_text = f2.readlines()
+
+report.write(compare.make_file(f2_text, f1_text, context=True))
+
+f1.close()
+f2.close()
+report.close()
+
+
+class Compare:
+    """
+    比较两个文件不同，输出到html文件
+    """
+    def __init__(self, file1_path, file2_path, outpath="/tmp/report.html"):
+        self._file1_path = file1_path
+        self._file2_path = file2_path
+        self._outpath = outpath
+
+    def run(self):
+        c = difflib.HtmlDiff()
+        f1 = open(self._file1_path)
+        f2 = open(self._file2_path)
+        f1_text = f1.readlines()
+        f2_text = f2.readlines()
+        report = open(self._outpath, "w+")
+        report.write(c.make_file(f1_text, f2_text, context=True))
+        f1.close()
+        f2.close()
+        report.close()
 
 
 

@@ -67,6 +67,9 @@
         <li><a href="/go-task/"><i class="icon-calendar icon-xlarge"></i>go-task操作</a></li>
         <li><a href="/config_transfor/"><i class="icon-calendar icon-xlarge"></i>转换配置文件</a></li>
         <li class="active"><a href="/self_invoke_result/"><i class="icon-calendar icon-xlarge"></i>自助申请流程审批界面</a></li>
+        {% if logged_role == "master" %}
+        <li><a href="/sync_db/"><i class="icon-calendar icon-xlarge"></i>数据库同步</a></li>
+        {% endif %}
     </ul>
   </nav>
   <!-- / nav -->

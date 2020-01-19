@@ -12,7 +12,7 @@ class SendMail:
     """
     发送邮件的库
     """
-    def __init__(self, sender="tangxinwu@tinytiger.cn", reciver="tangxinwu@tinytiger.cn", sender_password="pBA9d4xzWdJdFkx4"):
+    def __init__(self, sender="tangxinwu@tinytiger.cn", reciver="tangxinwu@tinytiger.cn", sender_password="MwzrPsiieUPFua9G"):
         """
         初始化发送邮件的库
         :param sender:  发送邮件的人
@@ -32,9 +32,9 @@ class SendMail:
         try:
             msg = MIMEText(mail_content, 'plain', 'utf-8')
             # 括号里的对应发件人邮箱昵称、发件人邮箱账号
-            msg['From'] = formataddr(["更新部署审核通知", self._sender])
+            msg['From'] = formataddr(["内部邮件通知", self._sender])
             # 括号里的对应收件人邮箱昵称、收件人邮箱账号
-            msg['To'] = formataddr(["更新审批组", self._reciver])
+            msg['To'] = formataddr(["内部通知人", self._reciver])
             # 邮件的主题
             msg['Subject'] = title
 

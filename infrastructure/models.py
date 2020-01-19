@@ -59,6 +59,7 @@ class Server(models.Model):
     descriptions = models.CharField("描述", max_length=500, blank=True, null=True)
     password = models.CharField("登陆密码", max_length=50, blank=True, null=True)
     aliyun_server_expire = models.DateTimeField("阿里云服务器过期时间（如果为空就不是阿里云服务器）", blank=True, null=True)
+    is_db_server = models.BooleanField("是否为数据库服务器", default=False)
 
     class Meta:
         ordering = ["server_name"]

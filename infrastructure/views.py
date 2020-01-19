@@ -4,7 +4,7 @@ from infrastructure.models import *
 from django.views.decorators.csrf import csrf_exempt
 import subprocess
 import paramiko
-from infrastructure.plugin import ssh_plugin, CustomOpen, process_check, vcenter_connect, CustomEmail, gogs_repo_check, login_plugin
+from infrastructure.plugin import ssh_plugin, CustomOpen, process_check, vcenter_connect, CustomEmail, gogs_repo_check, login_plugin, sync_db
 import os
 import re
 import json
@@ -351,6 +351,7 @@ def check_log(request):
 
 
 @csrf_exempt
+@need_login
 def go_task(request):
     """
     操作go-task的后台view函数
@@ -542,15 +543,120 @@ def show_3rd_custom_detail(request):
 
 
 @csrf_exempt
-def test1(request, test_params):
-    if request.method == "POST":
-        id = request.POST.get("id", "")
-        aa = request.POST.get("aa", "")
-        print(aa)
-        return HttpResponse("come on...Post data!.. data is {}".format(id))
-    if request.method == "DELETE":
-        id = request.DELETE.get("id", "")
-        return HttpResponse("Which one do u want to delete? delete is {}".format(id))
-    print(test_params)
-    return HttpResponse("Fail you lost everything...., Because you are {}".format(test_params))
+@need_login
+def syncdb(request):
+    """
+    同步和检测数据库不同和同步
+    :param request:
+    :return:
+    """
+    logged_user = request.session.get("login_info", "").get("name", "")
+    logged_role = request.session.get("login_info", "").get("role", "")
+    if logged_role not in ("auditing", "master"):
+        return HttpResponseRedirect("/logout/")
+    all_db_server = Server.objects.filter(is_db_server=True)
+    if request.POST:
+        action = request.POST.get("action", "")
+        server_ip = request.POST.get("server_ip", "")
+        database = request.POST.get("database", "")
+        src_server = request.POST.get("src_server", "")
+        src_db = request.POST.get("src_db", "")
+        src_table = request.POST.get("src_table", "")
+        des_server = request.POST.get("des_server", "")
+        des_db = request.POST.get("des_db", "")
+        des_table = request.POST.get("des_table", "")
+        options = request.POST.get("options", "")
+        if action == "db_check":
+            p1 = sync_db.CreateDB(str(server_ip))
+            setattr(p1, "username", "root")
+            setattr(p1, "password", "123456")
+            setattr(p1, "port", 3306)
+            setattr(p1, "host", server_ip)
+            # # p2 = sync_db.CreateDB("241的服务器")
+            # # setattr(p2, "username", "root")
+            # # setattr(p2, "password", "123456")
+            # # setattr(p2, "port", 3306)
+            # # setattr(p2, "host", "192.168.1.241")
+            # # # print(vars(p2))
+            #
+            ps = sync_db.SyncMysql(p1)
+            # ps.set_sync_database_name("asaaa")
+            # ps.set_sync_table_name("bbbb")
+            # # ps.run()
+            result = ps.db_precheck()
+            return HttpResponse(json.dumps(result))
+        if action == "table_check":
+            p1 = sync_db.CreateDB(str(server_ip))
+            setattr(p1, "username", "root")
+            setattr(p1, "password", "123456")
+            setattr(p1, "port", 3306)
+            setattr(p1, "host", server_ip)
+            ps = sync_db.SyncMysql(p1)
+            result = ps.db_precheck(database=database)
+            return HttpResponse(json.dumps(result))
+        if action == "compare":
+            compare_detail = {
+                "src_server": src_server,
+                "src_db": src_db,
+                "src_table": src_table,
+                "des_server": des_server,
+                "des_db": des_db,
+                "des_table": des_table
+            }
+            src = sync_db.CreateDB(str(src_server))
+            des = sync_db.CreateDB(str(des_server))
+            setattr(src, "username", "root")
+            setattr(src, "password", "123456")
+            setattr(src, "port", 3306)
+            setattr(src, "host", compare_detail.get("src_server"))
+            setattr(des, "username", "root")
+            setattr(des, "password", "123456")
+            setattr(des, "port", 3306)
+            setattr(des, "host", compare_detail.get("des_server"))
+            ps = sync_db.SyncMysql(src, des)
+            ps.compare_files(compare_detail)
+            return HttpResponse("比较分支")
+        if action == "export":
+            # 导出分支只关注于左边的部分 右边部分 忽略
+            src = sync_db.CreateDB(str(src_server))
+            setattr(src, "username", "root")
+            setattr(src, "password", "123456")
+            setattr(src, "port", 3306)
+            setattr(src, "host", src_server)
+            ps = sync_db.SyncMysql(src)
+            ps.set_sync_or_export_database_name(src_db)
+            if src_table:
+                ps.set_sync_or_export_table_name(src_table)
+            print(options)
+            download_url = ps.export(options=options)
+            return HttpResponse(download_url)
+        if action == "sync":
+            sync_detail = {
+                "src_server": src_server,
+                "src_db": src_db,
+                "src_table": src_table,
+                "des_server": des_server,
+                "des_db": des_db,
+                "des_table": des_table
+            }
+            print(sync_detail)
+            src = sync_db.CreateDB(str(src_server))
+            des = sync_db.CreateDB(str(des_server))
+            setattr(src, "username", "root")
+            setattr(src, "password", "123456")
+            setattr(src, "port", 3306)
+            setattr(src, "host", sync_detail.get("src_server"))
+            setattr(des, "username", "root")
+            setattr(des, "password", "123456")
+            setattr(des, "port", 3306)
+            setattr(des, "host", sync_detail.get("des_server"))
+            ps = sync_db.SyncMysql(src, des)
+            ps.set_sync_or_export_database_name(src_db)
+            ps.set_sync_or_export_table_name(src_table)
+            ps.sync(sync_detail)
+            return HttpResponse("同步分支")
+    return render(request, "sync_db.html", locals())
 
+
+def display_report(request):
+    return render(request, "report.html", locals())

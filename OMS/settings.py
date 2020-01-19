@@ -22,7 +22,7 @@ djcelery.setup_loader()
 
 CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
 
-BROKER_URL = "amqp://admin:admin@192.168.1.241:5672/"  # 代理人 负责分发任务去worker
+BROKER_URL = "amqp://admin:admin@127.0.0.1:5672/"  # 代理人 负责分发任务去worker
 
 CELERY_RESULT_BACKEND = 'django-db'  # 指定使用哪个数据库保存djcelery的数据
 

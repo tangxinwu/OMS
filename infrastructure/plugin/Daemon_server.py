@@ -23,7 +23,6 @@ except ImportError:
     from CustomEmail import SendMail
 
 
-
 class MakeSnapshotThreading:
     """
     把创建快照的方法 封装成一个可调用的类
@@ -109,9 +108,9 @@ def snapshot_timer():
     task_list = list()
     params = dict()
     data = (
-        ("192.168.1.232", "", "", "", "0:00"),
-        ("192.168.1.241", "", "", "", "0:10"),
-        ("192.168.1.246", "", "", "", "0:15"),
+        # ("192.168.1.239", "", "", "", "16:22"),
+        ("192.168.1.241", "", "", "", "00:10"),
+        ("192.168.1.246", "", "", "", "00:15"),
 
     )
 
@@ -143,7 +142,7 @@ def aliyun_expire_check_timer():
     """
     check_time = "00:00"
 
-    def expire_check(alert_time=10, expire_check_url="http://127.0.0.1:8001/aliyun_check/"):
+    def expire_check(alert_time=10, expire_check_url="http://127.0.0.1:10088/aliyun_check/"):
         aliyun_expire_data = eval(requests.get(expire_check_url).content.decode("utf8"))
         current_time = datetime.datetime.now()
         for hostname, expire_time in aliyun_expire_data.items():
@@ -161,6 +160,19 @@ def aliyun_expire_check_timer():
 #     schedule.every(10).seconds.do(test)
 
 
+def schedule_change_host_password_timer():
+    """
+    定期修改主机root密码
+    :return:
+    """
+    change_time = "00:00"
+
+    def change_password():
+        pass
+
+    schedule.every().day.at(change_time).do(change_password)
+
+
 if __name__ == "__main__":
     all_locals = locals().copy()
     with daemon.DaemonContext():
@@ -170,6 +182,7 @@ if __name__ == "__main__":
         while True:
             schedule.run_pending()
             time.sleep(1)
+    # 调试请打开这个注释 注释掉上面的上下文管理器
     # for task in all_locals:
     #     if task.endswith("_timer"):
     #         all_locals.get(task)()

@@ -13,7 +13,7 @@ admin.site.register(ServerType, ServerTypeAdmin)
 
 class ServeAdmin(admin.ModelAdmin):
     list_display = ["server_name", "wan_ip", "lan_ip", "applications", "descriptions",
-                    "aliyun_server_expire", "server_type"]
+                    "aliyun_server_expire", "server_type", "is_db_server"]
 
 
 admin.site.register(Server, ServeAdmin)
