@@ -83,7 +83,7 @@
     </div>
 
       <div class="col-sm-12">
-          <div class="col-sm-4">
+          <div class="col-sm-3">
               <select class="form-control" id="applications">
                     <option value="">选择应用名字</option>
                     {% if logged_role == "master" %}
@@ -103,12 +103,12 @@
                     {% endif %}
               </select>
           </div>
-          <div class="col-sm-4">
+          <div class="col-sm-3">
               <select class="form-control" id="tags">
                     <option value="">选择tags</option>
               </select>
           </div>
-          <div class="col-sm-4">
+          <div class="col-sm-3">
               <select class="form-control" id="keywords_content" >
                     <option value="">选择过滤关键字</option>
                     {% for application_title in all_application_title %}
@@ -117,6 +117,12 @@
               </select>
           </div>
 
+                <div class="col-sm-3">
+              <select class="form-control" id="options_content" >
+                    <option value="ConfigYes">更新配置文件</option>
+                    <option value="ConfigNo">不更新配置文件</option>
+              </select>
+          </div>
 
     </div>
     <div class="col-sm-12">
@@ -154,6 +160,7 @@
                                             <th>状态</th>
                                             <th>更新时间</th>
                                             <th>更新人</th>
+                                            <th>是否使用config</th>
                                             <th>tags更新说明</th>
                                         </thead>
                                         <tbody id="task_table">

@@ -156,6 +156,7 @@ class UpdateLogs(models.Model):
     UpdateTags = models.CharField("更新的tags", max_length=100, blank=True, null=True)
     UpdateBranch = models.CharField("更新的分支", max_length=50, blank=True, null=True)
     UpdateDescription = models.TextField("本次更新的内容", max_length=500, blank=True, null=True)
+    UpdateUseConfig = models.CharField("是否使用配置更新", max_length=50, blank=True, null=True)
 
     class Meta:
         ordering = ['UpdateName']

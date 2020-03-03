@@ -176,48 +176,63 @@ import random
 #
 # os.system(change_cmd)
 
+#
+# import difflib
+#
+# compare = difflib.HtmlDiff()
+#
+# f1 = open("/home/tangxinwu/Desktop/test1.txt")
+#
+# f2 = open("/home/tangxinwu/Desktop/test2.txt")
+#
+# report = open("/home/tangxinwu/Desktop/report.html", "w+")
+#
+# f1_text = f1.readlines()
+#
+# f2_text = f2.readlines()
+#
+# report.write(compare.make_file(f2_text, f1_text, context=True))
+#
+# f1.close()
+# f2.close()
+# report.close()
+#
+#
+# class Compare:
+#     """
+#     比较两个文件不同，输出到html文件
+#     """
+#     def __init__(self, file1_path, file2_path, outpath="/tmp/report.html"):
+#         self._file1_path = file1_path
+#         self._file2_path = file2_path
+#         self._outpath = outpath
+#
+#     def run(self):
+#         c = difflib.HtmlDiff()
+#         f1 = open(self._file1_path)
+#         f2 = open(self._file2_path)
+#         f1_text = f1.readlines()
+#         f2_text = f2.readlines()
+#         report = open(self._outpath, "w+")
+#         report.write(c.make_file(f1_text, f2_text, c  ontext=True))
+#         f1.close()
+#         f2.close()
+#         report.close()
 
-import difflib
 
-compare = difflib.HtmlDiff()
+# -*- coding: utf-8 -*-
 
-f1 = open("/home/tangxinwu/Desktop/test1.txt")
+from tkinter import *
 
-f2 = open("/home/tangxinwu/Desktop/test2.txt")
+root = Tk()
 
-report = open("/home/tangxinwu/Desktop/report.html", "w+")
+root.title = ("GKP计算器")
+root.geometry("800x600")
+Label(root, text="测试label").pack(side=LEFT)
+frm = Frame(root)
 
-f1_text = f1.readlines()
-
-f2_text = f2.readlines()
-
-report.write(compare.make_file(f2_text, f1_text, context=True))
-
-f1.close()
-f2.close()
-report.close()
+# left
 
 
-class Compare:
-    """
-    比较两个文件不同，输出到html文件
-    """
-    def __init__(self, file1_path, file2_path, outpath="/tmp/report.html"):
-        self._file1_path = file1_path
-        self._file2_path = file2_path
-        self._outpath = outpath
-
-    def run(self):
-        c = difflib.HtmlDiff()
-        f1 = open(self._file1_path)
-        f2 = open(self._file2_path)
-        f1_text = f1.readlines()
-        f2_text = f2.readlines()
-        report = open(self._outpath, "w+")
-        report.write(c.make_file(f1_text, f2_text, context=True))
-        f1.close()
-        f2.close()
-        report.close()
-
-
+root.mainloop()
 

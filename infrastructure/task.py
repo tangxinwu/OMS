@@ -14,6 +14,7 @@ def version_update_task(application_id):
     selected_application = Application.objects.get(id=int(application_id.split("_")[0]))
     application_time_flag = application_id.split("_")[1]
     application_tags = application_id.split("_")[2]
+    application_option = application_id.split("_")[3]
     print("打印time flag", application_time_flag)
     # 运行本地拉取脚本
     # pull_cmd = "/usr/bin/sh {} {} {} {} {}".format(selected_application.ApplicationUpdateScriptPath,
@@ -49,10 +50,11 @@ def version_update_task(application_id):
 
     # 远程运行脚本 ##
     ssh = ssh_plugin.SSHConnect(host)
-    cmd = "sh {} {} {}".format(
+    cmd = "sh {} {} {} {}".format(
         os.path.join("/tmp", os.path.basename(selected_application.ApplicationUpdateScriptPathAfter)),
         selected_application.ApplicationPath,
-        application_time_flag)
+        application_time_flag,
+        application_option)
     print(cmd)
     result = ssh.run_command(cmd)
     return (lambda x, y: x if x else y)(stdout, stderror) + result

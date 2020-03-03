@@ -66,6 +66,7 @@ $(function () {
         $("#update_result").empty();
         let application_id = $("#applications").val();
         let application_tags = $("#tags").val();
+        let application_options = $("#options_content").val();
         if (application_id == ""){
             swal("出错啦!", "请选择更新选项!", "error");
             return false;
@@ -79,7 +80,7 @@ $(function () {
 			confirmButtonText: "是的，我要更新",
 			confirmButtonColor: "#ec6c62"
 			}, function() {
-				$.post("/version_update/", {"application_id": application_id,"application_tags":application_tags} ,function (result) {
+				$.post("/version_update/", {"application_id": application_id,"application_tags":application_tags, "application_options": application_options} ,function (result) {
 				    // console.log(result);
 				        if (result.indexOf("DOCTYPE html") >= 1){
 				            swal("出错啦!", "您需要重新登录!", "error");

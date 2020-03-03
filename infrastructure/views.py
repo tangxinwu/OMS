@@ -110,6 +110,7 @@ def version_update(request):
     2019-01-15增加使用mq 异步同步机制 ， 使用django-celery
     version_update_task就是task任务的主程序
     2019-10-16 前端增加传入tags 可以根据仓库项目有的tags来拉取代码， 对应的拉取tags
+    2020-03-02 前端增加传入options_content 可以决定是否更新config 默认option_no 不更新配置文件
     :param request:
     :return:
     """
@@ -120,7 +121,8 @@ def version_update(request):
     if request.POST:
         application_id = request.POST.get("application_id", "")
         application_tags = request.POST.get("application_tags", "NullTags")
-        result = version_update_task.apply_async((str(application_id) + "_" + str(int(time.time())) + "_" + application_tags,),
+        application_options = request.POST.get("application_options", "ConfigNo")
+        result = version_update_task.apply_async((str(application_id) + "_" + str(int(time.time())) + "_" + application_tags + "_" + application_options,),
                                                  queue="update_version",
                                                  routing_key="task_a")
         # 尝试获取tags对应的更新说明
@@ -129,7 +131,8 @@ def version_update(request):
         UpdateLogs.objects.create(UpdateName=Application.objects.get(id=application_id),UpdateServer=Application.objects.get(id=application_id).ApplicationServer,
                                   UpdateTaskId=result, UpdateUser=logged_user, UpdateTags=application_tags,
                                   UpdateBranch=(lambda x: (lambda y: y if y else "master")(x) if not application_tags else "")(Application.objects.get(id=application_id).ApplicationBranch),
-                                  UpdateDescription=UpdateDescription)
+                                  UpdateDescription=UpdateDescription,
+                                  UpdateUseConfig=(lambda x: "是" if x=="ConfigYes" else "否")(application_options))
         return HttpResponse("任务(id={})已经开始".format(result))
         # except:
         #     return HttpResponse("任务(id={})开始失败".format(result))
@@ -337,10 +340,10 @@ def check_log(request):
                     update_logs_object = TaskResult.objects.get(task_id=i.UpdateTaskId)
                     last_data[i.UpdateTaskId] = [i.UpdateName, i.UpdateServer, i.UpdateTags, i.UpdateBranch, update_logs_object.status,
                                             str(update_logs_object.date_done.astimezone(pytz.timezone("Asia/Shanghai"))),
-                                                 i.UpdateUser]
+                                                 i.UpdateUser, i.UpdateUseConfig]
                 except TaskResult.DoesNotExist:
                     # updateLog表里面有这个task id 但是TaskResult不存在的，显示PROCESSING
-                    last_data[i.UpdateTaskId] = [i.UpdateName, "PROCESSING", "waiting", "waiting", "waiting", "waiting", "waiting"]
+                    last_data[i.UpdateTaskId] = [i.UpdateName, "PROCESSING", "waiting", "waiting", "waiting", "waiting", "waiting", "waiting"]
             return HttpResponse(json.dumps(last_data, ensure_ascii=False))
         if action == "detail_check":
             task_id = request.POST.get("task_id", "")
