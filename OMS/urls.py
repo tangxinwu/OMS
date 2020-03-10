@@ -34,7 +34,8 @@ urlpatterns = [
     path("self_invoke_result/", iv.self_invoke_result),        # 自助申请审批界面
     path("ssh_failed_page/", iv.ssh_failed_page),              # web链接SSH失败的失败界面
     path("aliyun_check/", iv.aliyun_check),                    # 检测阿里云服务器
-    path("version_tags_check/", iv.version_tags_check),         # 检测某项目的tags （get方法传参数）
+    path("version_tags_check/", iv.version_tags_check),        # 检测某项目的tags （get方法传参数）
     path("display_report/", iv.display_report),                # 显示数据库 对比的不同
-    path("sync_db/", iv.syncdb)                               # 数据库对比
+    path("sync_db/", iv.syncdb),                               # 数据库对比
+    path("cmd_check/", iv.cmd_check)                           # 外网cmd版本远程升级
 ]

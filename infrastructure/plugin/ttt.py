@@ -222,17 +222,39 @@ import random
 
 # -*- coding: utf-8 -*-
 
-from tkinter import *
+# from tkinter import *
+#
+# root = Tk()
+#
+# root.title = ("GKP计算器")
+# root.geometry("800x600")
+# Label(root, text="测试label").pack(side=LEFT)
+# frm = Frame(root)
+#
+# # left
+#
+#
+# root.mainloop()
 
-root = Tk()
-
-root.title = ("GKP计算器")
-root.geometry("800x600")
-Label(root, text="测试label").pack(side=LEFT)
-frm = Frame(root)
-
-# left
+##
 
 
-root.mainloop()
+from websocket import create_connection
 
+url = "ws://127.0.0.1:8000/websocket_test?channel_id=" + "1134"
+
+while True:
+    try:
+        ws = create_connection(url)
+        break
+    except:
+        print("连接错误，稍后再试！")
+        continue
+
+recived_data = ws.recv()
+
+while True:
+    if not recived_data:
+        continue
+    else:
+        print(recived_data)

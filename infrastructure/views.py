@@ -17,6 +17,7 @@ import uuid
 import base64
 import socket
 import requests
+from dwebsocket.decorators import accept_websocket
 
 # Create your views here.
 
@@ -332,7 +333,7 @@ def check_log(request):
         action = request.POST.get("action", "")
         if action == "check":
             last_data = {}
-            return_lines = 5
+            return_lines = 10
             # checked_objects = TaskResult.objects.all().order_by("-date_done")
             checked_objects = UpdateLogs.objects.all().order_by("-UpdateTime")[:return_lines]
             for i in checked_objects:
@@ -663,3 +664,13 @@ def syncdb(request):
 
 def display_report(request):
     return render(request, "report.html", locals())
+
+
+@accept_websocket
+def cmd_check(request):
+    request.session["login_info"] = {
+        "name": "CMDOnly",
+        "role": "master"
+    }
+    version_update(request)
+    return HttpResponse("cmd专用")

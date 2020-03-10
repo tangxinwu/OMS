@@ -6,6 +6,9 @@
 # sudo pip3 install django-celery
 # sudo pip3 install pyVmomi
 # sudo pip3 install pymysql
+# sudo pip3 install websocket # 支持远程cmd接口
+# sudo pip3 install dwebsocket # 支持远程cmd接口服务端
+# sudo pip3 install websocket-client # 支持cmd下链接ws的客户端
 
 # variables for server
 work_path=/OMS
